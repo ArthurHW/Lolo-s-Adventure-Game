@@ -10,6 +10,32 @@ void carregarJogo(); // funcao para carregar um jogo ja comecado
 void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
 
+typedef struct gravacao {
+ int identificador;
+ int totalpts;
+ int ultimafase;
+ int vidas;
+ char nomejogador[9];
+}save;
+
+typedef struct fase {
+ int tamanhox;
+ int tamanhoy;
+ char elementos[x][y];
+}fase;
+
+typedef struct ponto {
+ char x;
+ char y;
+}ponto;
+
+typedef struct jogador_st {
+    int totalpts;
+    int fase;
+    int vidas;
+    char nomejogador[9];
+}jogador;
+
 int main()
 {
     char opcao;
@@ -36,6 +62,16 @@ int main()
 void menu()
 {
     printf("(N) - Novo Jogo\n(C) - Carregar Jogo\n(M) - Mostrar Creditos\n(S) - Sair\n");
+}
+
+void mostraCreditos()
+{
+    printf("Creditos do jogo:\nDesenvolvido por: Vitor Caruso Rodrigues Ferrer (00327023)\n");
+}
+
+void sair()
+{
+    printf("Encerrando o jogo, ateh a proxima!\n");
 }
 
 char validaentrada()
@@ -73,13 +109,5 @@ void carregarJogo()
     printf("Carregando a lista de jogos salvos, aguarde um minuto.\n");
 }
 
-void mostraCreditos()
-{
-    printf("Creditos do jogo:\nDesenvolvido por: Vitor Caruso Rodrigues Ferrer (00327023)\n");
-}
 
-void sair()
-{
-    printf("Encerrando o jogo, ateh a proxima!\n");
-}
 
