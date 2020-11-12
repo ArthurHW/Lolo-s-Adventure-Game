@@ -42,9 +42,29 @@ int main()
 //    sair();
 
     char lolo = '@', caracter;
-    int x = 31, y = 11;
+    int x = 2, y = 2;
+    int fase[13][13], l, c;
     int oldX = x, oldY = y;
 
+    for (l = 0; l < 13; l++) // imprimir os limites 13x13 p ter uma nocao
+    {
+        printf("P");
+        for (c = 1; c < 13; c++)
+        {
+            if (l == 0 || l == 12)
+            {
+                printf("P");
+            }
+            else
+            {
+                if (c == 12)
+                    printf("P");
+                else
+                    printf(" ");
+            }
+        }
+        printf("\n");
+    }
     _setcursortype(_NOCURSOR);
     gotoxy(x, y);
     do
@@ -58,19 +78,25 @@ int main()
         oldY = y;
         switch (caracter)
         {
-            case S_CIMA:  y--;
+            case S_CIMA:  if (y != 2) // limite
+                            y--;
                           break;
-            case S_BAIXO: y++;
+            case S_BAIXO: if (y != 12)
+                            y++;
                           break;
-            case S_ESQ:   x--;
+            case S_ESQ:   if (x != 2)
+                            x--;
                           break;
-            case S_DIR:   x++;
+            case S_DIR:   if (x != 12)
+                            x++;
                           break;
         }
     }
     while(caracter != ESC);
+    gotoxy(13,13); // so pra nao retornar a mensagem q finalizou em cima da matriz
     return 0;
 }
+
 
 void menu()
 {
