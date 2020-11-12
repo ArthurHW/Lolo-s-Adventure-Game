@@ -3,12 +3,6 @@
 #include <ctype.h>
 #include <string.h>
 
-// Construir uma interface simplificada para o menu de um jogo, contendo 4 opcoes:
-// Novo jogo: ler o nome do jogador e imprimir uma mensagem dizendo que o jogo esta comecando
-// Carregar jogo: imprimir uma mensagem dizendo que a lista de jogos esta sendo carregada
-// Mostrar creditos: imprime os creditos dos desenvolvedores do codigo (nesse caso o nome e o cartao UFRGS)
-// Sair: imprime uma mensagem dizendo que o jogo esta encerrando
-
 void menu(); // funcao para o menu do jogo
 char validaentrada(); // funcao para validar a entrada da opcao do jogo
 void novoJogo(); // funcao para comecar um novo jogo
@@ -71,13 +65,7 @@ void novoJogo()
     fflush(stdin);
     fgets(nome, 12, stdin);
     nome[strlen(nome)-1] = '\0';
-    // fiquei confuso em relacao ao tamanho, achei que era 9, ja que sao os caracteres vao de [0,9] e ele nao le a quebra de linha
-    // mas se eu colocasse 9, ele lia apenas 8 caracteres
-    // o unico jeito que eu achei de ele ler 10 caracteres, foi colocando 12, mas nao entendi o pq isso possa ter dado certo
-    // testei para compiladores online, e nao estava funcionando essa parte do programa
-    // gostaria, se possivel, de um retorno onde eu possa ter me equivocado,
-    // ja que, apesar de o programa estar funcionando no codeblocks, eu nao entendi a logica dessa parte, e nem pq nao esta funcionando para compiladores online
-    printf("Jogador %s: se prepare, jogo iniciando!!\n", nome);
+
 }
 
 void carregarJogo()
