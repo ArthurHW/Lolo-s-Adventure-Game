@@ -6,12 +6,13 @@
 #include <conio.h>
 #include <time.h>
 #include <windows.h>
+
+
 #define S_CIMA 72
 #define S_BAIXO 80
 #define S_ESQ 75
 #define S_DIR 77
 #define ESC 27
-
 void menu(); // funcao para o menu do jogo
 char validaentrada(); // funcao para validar a entrada da opcao do jogo
 void novoJogo(); // funcao para comecar um novo jogo
@@ -48,31 +49,28 @@ int main()
     gotoxy(x, y);
     do
     {
-            gotoxy(oldX, oldY);
-            cprintf(" ");
-            gotoxy(x, y);
-            printf("%c", lolo);
-            caracter = getch();
-            oldX = x;
-            oldY = y;
-            switch (caracter)
-            {
-                case S_CIMA:  y--;
-                              break;
-                case S_BAIXO: y++;
-                              break;
-                case S_ESQ:   x--;
-                              break;
-                case S_DIR:   x++;
-                              break;
-            }
+        gotoxy(oldX, oldY);
+        cprintf(" ");
+        gotoxy(x, y);
+        printf("%c", lolo);
+        caracter = getch();
+        oldX = x;
+        oldY = y;
+        switch (caracter)
+        {
+            case S_CIMA:  y--;
+                          break;
+            case S_BAIXO: y++;
+                          break;
+            case S_ESQ:   x--;
+                          break;
+            case S_DIR:   x++;
+                          break;
+        }
     }
-   while(caracter != ESC);
-
-
+    while(caracter != ESC);
     return 0;
 }
-
 
 void menu()
 {
