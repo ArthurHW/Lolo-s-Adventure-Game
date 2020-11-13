@@ -7,40 +7,38 @@
 #include <time.h>
 #include <windows.h>
 
-
 #define S_CIMA 72
 #define S_BAIXO 80
 #define S_ESQ 75
 #define S_DIR 77
 #define ESC 27
+
 void menu(); // funcao para o menu do jogo
 char validaentrada(); // funcao para validar a entrada da opcao do jogo
 void novoJogo(); // funcao para comecar um novo jogo
 void carregarJogo(); // funcao para carregar um jogo ja comecado
 void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
+void teste_movimentacao(); // funcao para teste da movimentacao para ficar mais facil de chamar
+void hidecursor(); // funcao pra esconder o cursor
 
 int main()
 {
-//    char opcao;
-//    printf("Lolo's Adventure\n");
-//    menu();
-//    do
-//    {
-//        opcao = validaentrada();
-//        switch (opcao)
-//        {
-//            case 'N': novoJogo();
-//                      break;
-//            case 'C': carregarJogo();
-//                      break;
-//            case 'M': mostraCreditos();
-//                      break;
-//        }
-//    }
-//    while (opcao != 'S'); // enquanto o usuario nao digitar S, ja que o programa repetira ate o usuario querer sair
-//    sair();
+    teste_movimentacao();
+    return 0;
+}
 
+void hidecursor() // https://stackoverflow.com/questions/30126490/how-to-hide-console-cursor-in-c
+{
+   HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+   CONSOLE_CURSOR_INFO info;
+   info.dwSize = 100;
+   info.bVisible = FALSE;
+   SetConsoleCursorInfo(consoleHandle, &info);
+}
+
+void teste_movimentacao()
+{
     char lolo = '@', caracter;
     int x = 2, y = 2;
     int fase[13][13], l, c;
@@ -65,7 +63,8 @@ int main()
         }
         printf("\n");
     }
-    _setcursortype(_NOCURSOR);
+//    _setcursortype(_NOCURSOR);
+    hidecursor();
     gotoxy(x, y);
     do
     {
@@ -94,9 +93,7 @@ int main()
     }
     while(caracter != ESC);
     gotoxy(13,13); // so pra nao retornar a mensagem q finalizou em cima da matriz
-    return 0;
 }
-
 
 void menu()
 {
