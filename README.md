@@ -1,13 +1,25 @@
 "# Trabalho_Final"
 
-Movimentacao e controles do Lolo
+Movimentacao e controles do Lolo em tempo real - vitor (fazendo)
 
-Fases
+Fases:
 
-fase 2 // vitor
+fase 1 - arthur (feito)
+fase 2 - vitor (feito)
+fase 3 - 
 
-Pontuacao e vidas
+Pontuacao e vidas - 
 
-Save
+Save em arquivo binario - 
 
-Projeta o mapa e o personagem em tempo real
+Carregar o mapa do arquivo texto e imprimir na tela - 
+
+Identificar os elementos do mapa -  
+
+Objetos e interacao do Lolo com eles - 
+
+Movimentacao dos inimigos - 
+
+Implementar cheat codes (opcional) - 
+
+Comecar novo jogo - 
