@@ -11,22 +11,22 @@ void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
 
 typedef struct gravacao {
- int identificador;
- int totalpts;
- int ultimafase;
- int vidas;
- char nomejogador[9];
+    int identificador;
+    int totalpts;
+    int ultimafase;
+    int vidas;
+    char nomejogador[9];
 }save;
 
 typedef struct fase {
- int tamanhox;
- int tamanhoy;
- char elementos[x][y];
+    int tamanhox;
+    int tamanhoy;
+    char elementos[x][y];
 }fase;
 
 typedef struct ponto {
- char x;
- char y;
+    char x;
+    char y;
 }ponto;
 
 typedef struct jogador_st {
