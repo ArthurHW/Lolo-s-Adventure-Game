@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <conio.h>
+#include<conio2.h>
 
 // definição das structs:
 typedef struct gravacao {
@@ -15,7 +17,7 @@ typedef struct gravacao {
 typedef struct fase {
     int tamanhox;
     int tamanhoy;
-    char elementos[13][13];
+    char elementos[13][14];
 }fase;
 
 typedef struct ponto {
@@ -35,18 +37,25 @@ void menu();
 void imprime_menu(); // funcao para imprimir o menu do jogo
 char validaentrada(); // funcao para validar a entrada da opcao do jogo
 save novoJogo(); // funcao para comecar um novo jogo
-void carregarJogo(); // funcao para carregar um jogo ja comecado
+save carregarJogo(); // funcao para carregar um jogo ja comecado
 void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
 void imprime_save(save);// dado um save imprime ele na tela formatado
+fase gera_fase(FILE*);
+void imprime_mapa(fase);
 
 
 
 // Função principal
 int main()
 {
-
+    FILE *arq;
+    fase fasea;
+    arq = fopen("fase1.txt", "r");
+    fasea = gera_fase(arq);
+    imprime_mapa(fasea);
     menu();
+    fclose(arq);
 
     return 0;
 }
@@ -66,7 +75,7 @@ void menu(){
         {
             case 'N':   jogo = novoJogo();
                         break;
-            case 'C':   carregarJogo();
+            case 'C':   jogo = carregarJogo();
                         break;
             case 'M':   mostraCreditos();
                         break;
@@ -79,7 +88,7 @@ void menu(){
 void imprime_menu()
 {
     printf("(N) - Novo Jogo\n(C) - Carregar Jogo\n(M) - Mostrar Creditos\n(S) - Sair\n");
-    
+
 }
 
 void mostraCreditos()
@@ -127,7 +136,7 @@ save novoJogo()
             if(fread(&buffer, sizeof(save), 1, arq) == 1)
                 id++;
             else
-                printf("Erro na leitura do arquivo\n");    
+                printf("Erro na leitura do arquivo\n");
         }
 
 
@@ -153,28 +162,67 @@ save novoJogo()
     return novo_jogador;
 }
 
-void carregarJogo()
+save carregarJogo()
 {
     save buffer;
     FILE *arq;
+    int id;
+    // abre o arquivo dos saves
     if(!(arq = fopen("saves.bin", "r+b")))
         printf("Erro na abertura do arquivo!\n");
+    // imprime na tela os dados
     else {
         while(!feof(arq)){
             if(fread(&buffer, sizeof(save), 1, arq) == 1)
                 imprime_save(buffer);
-  
         }
+        rewind(arq);
+        printf("Digite o id que deseja acessar: \n");
+        scanf("%d", &id);
+        fseek(arq, sizeof(save), id);
+        if(fread(&buffer, sizeof(save), 1, arq) != 1)
+            printf("Erro na abertura do arquivo!\n");
     }
     fclose(arq);
+    return buffer;
 }
 
+
 void imprime_save(save jogador){
-    
+    // impressao das informações dos saves
     printf("\nJogador %d\n", jogador.identificador);
     printf("Nome: %s\n", jogador.nomejogador);
     printf("Pontos: %d\n", jogador.totalpts);
     printf("Fase: %d\n", jogador.ultimafase);
     printf("Vidas: %d\n", jogador.vidas);
+
+}
+
+fase gera_fase(FILE *arq)
+{
+    int linha, coluna;
+    fase fasea;
+
+    fasea.tamanhox = 13;
+    fasea.tamanhoy = 14;
+    for (linha = 0; linha < 13; linha++){
+        for (coluna = 0; coluna < 14; coluna++){
+            fasea.elementos[linha][coluna] = getc(arq);
+        }
+    }
+    return fasea;
+}
+
+
+void imprime_mapa(fase fasea)
+{
+    int linha, coluna;
+
+    for (linha = 0; linha < 13; linha++){
+        for (linha = 0; linha < 14; linha++){
+            //cprintf("%c", fasea.elementos[linha][coluna]);
+        }
+    }
+    cprintf("\n");
 
 }

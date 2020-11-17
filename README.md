@@ -10,9 +10,9 @@ fase 3 -
 
 Pontuacao e vidas - 
 
-Save em arquivo binario - 
+Save em arquivo binario - Arthur (feito)
 
-Carregar o mapa do arquivo texto e imprimir na tela - 
+Carregar o mapa do arquivo texto e imprimir na tela - Arthur (em andamento, mas ta dificil)
 
 Identificar os elementos do mapa -  
 
@@ -22,4 +22,4 @@ Movimentacao dos inimigos -
 
 Implementar cheat codes (opcional) - 
 
-Comecar novo jogo - 
+Comecar novo jogo e Carregar Jogos - Arthur (Quase pronto "eu acho")
