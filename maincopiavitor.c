@@ -13,86 +13,48 @@
 #define S_DIR 77
 #define ESC 27
 
+typedef struct gravacao {
+    int identificador;
+    int totalpts;
+    int ultimafase;
+    int vidas;
+    char nomejogador[9];
+}save;
+
+typedef struct fase {
+    int tamanhox;
+    int tamanhoy;
+    char elementos[13][14];
+}fase;
+
+typedef struct ponto {
+    char x;
+    char y;
+}ponto;
+
+typedef struct jogador_st {
+    int totalpts;
+    int fase;
+    int vidas;
+    char nomejogador[9];
+}jogador;
+
+
 void menu(); // funcao para o menu do jogo
 char validaentrada(); // funcao para validar a entrada da opcao do jogo
 void novoJogo(); // funcao para comecar um novo jogo
 void carregarJogo(); // funcao para carregar um jogo ja comecado
 void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
-void teste_movimentacao(); // funcao para teste da movimentacao para ficar mais facil de chamar
+void movimentacao(char, int, int); // funcao para a movimentacao, dado o lolo e seu x e y
 void hidecursor(); // funcao pra esconder o cursor
+void le_mapa(int); // funcao que imprime o mapa na tela dado o numero daquela fase
 
 int main()
 {
-    teste_movimentacao();
+    char lolo = '@';
+    le_mapa(2);
     return 0;
-}
-
-void hidecursor() // https://stackoverflow.com/questions/30126490/how-to-hide-console-cursor-in-c
-{
-   HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-   CONSOLE_CURSOR_INFO info;
-   info.dwSize = 100;
-   info.bVisible = FALSE;
-   SetConsoleCursorInfo(consoleHandle, &info);
-}
-
-void teste_movimentacao()
-{
-    char lolo = '@', caracter;
-    int x = 2, y = 2;
-    int fase[13][13], l, c;
-    int oldX = x, oldY = y;
-
-    for (l = 0; l < 13; l++) // imprimir os limites 13x13 p ter uma nocao
-    {
-        printf("P");
-        for (c = 1; c < 13; c++)
-        {
-            if (l == 0 || l == 12)
-            {
-                printf("P");
-            }
-            else
-            {
-                if (c == 12)
-                    printf("P");
-                else
-                    printf(" ");
-            }
-        }
-        printf("\n");
-    }
-//    _setcursortype(_NOCURSOR);
-    hidecursor();
-    gotoxy(x, y);
-    do
-    {
-        gotoxy(oldX, oldY);
-        cprintf(" ");
-        gotoxy(x, y);
-        printf("%c", lolo);
-        caracter = getch();
-        oldX = x;
-        oldY = y;
-        switch (caracter)
-        {
-            case S_CIMA:  if (y != 2) // limite
-                            y--;
-                          break;
-            case S_BAIXO: if (y != 12)
-                            y++;
-                          break;
-            case S_ESQ:   if (x != 2)
-                            x--;
-                          break;
-            case S_DIR:   if (x != 12)
-                            x++;
-                          break;
-        }
-    }
-    while(caracter != ESC);
-    gotoxy(13,13); // so pra nao retornar a mensagem q finalizou em cima da matriz
 }
 
 void menu()
@@ -144,4 +106,92 @@ void sair()
 {
     printf("Encerrando o jogo, ateh a proxima!\n");
 }
+
+void hidecursor() // https://stackoverflow.com/questions/30126490/how-to-hide-console-cursor-in-c
+{
+   HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+   CONSOLE_CURSOR_INFO info;
+   info.dwSize = 100;
+   info.bVisible = FALSE;
+   SetConsoleCursorInfo(consoleHandle, &info);
+}
+
+void movimentacao(char lolo, int x, int y)
+{
+    char caracter;
+    int oldX = x, oldY = y;
+
+    hidecursor();
+    gotoxy(x, y);
+    while (caracter != ESC)
+    {
+        gotoxy(oldX, oldY);
+        printf(" ");
+        gotoxy(x, y);
+        printf("%c", lolo);
+        caracter = getch();
+        oldX = x;
+        oldY = y;
+        switch (caracter)
+        {
+            case S_CIMA:  if (y != 2) // limite da borda (ainda precisa colocar uma funcao aqui p testar os blocos)
+                            y--;
+                          break;
+            case S_BAIXO: if (y != 12)
+                            y++;
+                          break;
+            case S_ESQ:   if (x != 2)
+                            x--;
+                          break;
+            case S_DIR:   if (x != 12)
+                            x++;
+                          break;
+        }
+    }
+    gotoxy(13,13); // so pra nao retornar a mensagem q finalizou em cima da fase
+}
+
+void le_mapa(int numerofase)
+{
+    FILE *arq;
+    int x, y;
+    char letra, lolo, nome[10];
+
+    switch (numerofase)
+    {
+        case 1: strncpy(nome, "Fase1.txt", 10);
+                break;
+        case 2: strncpy(nome, "Fase2.txt", 10);
+                break;
+        case 3: strncpy(nome, "Fase3.txt", 10);
+                break;
+    }
+
+    arq = fopen(nome, "r");
+    if (arq == NULL)
+        perror("Erro ao abrir o arquivo");
+    else
+    {
+        while (!feof(arq))
+        {
+//            if (fgets(linha, 12, arq) == NULL)
+//                perror("Erro ao ler a linha");
+//            else
+//                printf("%s", linha);
+             letra = getc(arq);
+             printf("%c", letra);
+             if (letra == '@')
+             {
+                lolo = letra;
+                x = wherex()-1; // -1 porque o cursor fica depois do ultimo caracter lido
+                y = wherey();
+             }
+        }
+        movimentacao(lolo, x, y);
+    }
+    fclose(arq);
+}
+
+
+
 
