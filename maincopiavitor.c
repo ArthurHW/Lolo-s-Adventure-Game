@@ -24,7 +24,7 @@ typedef struct gravacao {
 typedef struct fase {
     int tamanhox;
     int tamanhoy;
-    char elementos[13][14];
+    char elementos[14][14]; // 13 por 14 ele nao lia uma parte do mapa ai tive que botar 14x14
 }fase;
 
 typedef struct ponto {
@@ -39,27 +39,85 @@ typedef struct jogador_st {
     char nomejogador[9];
 }jogador;
 
-
-void menu(); // funcao para o menu do jogo
+// protótipos das funções auxiliares:
+void menu();
+void imprime_menu(); // funcao para imprimir o menu do jogo
 char validaentrada(); // funcao para validar a entrada da opcao do jogo
-void novoJogo(); // funcao para comecar um novo jogo
+int novoJogo(); // funcao para comecar um novo jogo
 void carregarJogo(); // funcao para carregar um jogo ja comecado
 void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
-void movimentacao(char, int, int); // funcao para a movimentacao, dado o lolo e seu x e y
+void imprime_saves(FILE*);// dado um save imprime ele na tela formatado
+fase gera_fase(int); // dado o numero de uma fase, retorna uma struct fase
+void movimentacao(fase); // funcao para a movimentacao, dada uma fase
+void imprime_mapa(fase); // imprime a fase
 void hidecursor(); // funcao pra esconder o cursor
-void le_mapa(int); // funcao que imprime o mapa na tela dado o numero daquela fase
+void contato_lolo(int, int*, int*);
 
+// Função principal
 int main()
 {
-    char lolo = '@';
-    le_mapa(2);
+    fase fase1;
+//    menu();
+    fase1 = gera_fase(2);
+    imprime_mapa(fase1);
+//    movimentacao(fase1);
     return 0;
 }
 
-void menu()
+
+// Funções Auxiliares
+
+void hidecursor() // https://stackoverflow.com/questions/30126490/how-to-hide-console-cursor-in-c
+{
+   HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+   CONSOLE_CURSOR_INFO info;
+   info.dwSize = 100;
+   info.bVisible = FALSE;
+   SetConsoleCursorInfo(consoleHandle, &info);
+}
+
+void menu(){
+    int volta = 0;
+    char opcao;
+
+        do {
+            printf("---- Lolo's Adventure ----\n");
+            imprime_menu();
+            opcao = validaentrada();
+            switch (opcao)
+            {
+                case 'N':   novoJogo();
+                            break;
+                case 'C':   carregarJogo();
+                            break;
+                case 'M':   mostraCreditos();
+                            break;
+                case 'S':   sair();
+                            break;
+            }
+        } while (opcao != 'S' && volta != 0);
+
+}
+
+void imprime_menu()
 {
     printf("(N) - Novo Jogo\n(C) - Carregar Jogo\n(M) - Mostrar Creditos\n(S) - Sair\n");
+
+}
+
+void mostraCreditos()
+{
+    clrscr();
+    printf("Creditos do jogo:\nDesenvolvido por: Vitor Caruso Rodrigues Ferrer (00327023)\nArthur Henrique Wiebusch (00324318)\n");
+    system("pause");
+    fflush(stdin);
+    clrscr();
+}
+
+void sair()
+{
+    printf("Encerrando o jogo, ateh a proxima!\n");
 }
 
 char validaentrada()
@@ -74,88 +132,127 @@ char validaentrada()
         if (opcao != 'N' && opcao != 'C' && opcao != 'M' && opcao != 'S')
         {
             printf("Opcao invalida\n");
-            menu(); // imprime o menu para o usuario novamente
+            imprime_menu(); // imprime o menu para o usuario novamente
         }
     }
     while ((opcao != 'N') && (opcao != 'C') && (opcao != 'M') && (opcao != 'S')); // enquanto nao for um dos caracteres validos
     return opcao;
 }
 
-void novoJogo()
+// Cria um novo jogo para o usuario
+int novoJogo()
 {
-    char nome [13];
+    char op = '0';
+    char idchar = '0';
+    int id;
+    save novo_jogador, buffer;
+    FILE* arq;
 
-    printf("Digite seu nome (maximo de 10 caracteres): ");
-    fflush(stdin);
-    fgets(nome, 12, stdin);
-    nome[strlen(nome)-1] = '\0';
+    // abrir o arquivo com os saves
+    if(!(arq = fopen("saves.bin", "r+b")))
+        printf("Erro na abertura do arquivo!\n");
 
-}
+    // ver quantos saves tem e salvar na variavel id
+    else {
+        while(!feof(arq)){
+            if(fread(&buffer, sizeof(save), 1, arq) == 1)
+                id++;
 
-void carregarJogo()
-{
-    printf("Carregando a lista de jogos salvos, aguarde um minuto.\n");
-}
+        }
+        if(id >= 3){
+            printf("Limite de Jogos salvos atingido (3), deseja sobrescrever seus dados?\n(1) - Sim\n(2)- Nao\n");
+            printf("(V) - Voltar\n");
+            do{
+                scanf(" %c", &op);
+            } while(op != '1' && op != '2');
+            if (toupper(op) == 'V')
+                return 0;
+        }
 
-void mostraCreditos()
-{
-    printf("Creditos do jogo:\nDesenvolvido por: Vitor Caruso Rodrigues Ferrer (00327023)\n");
-}
+        if (op != '2'){
+            // solicitar e salvar o nome do jogador
+            if (op == '1'){
+                imprime_saves(arq);
+                printf("Qual id deseja sobrecrever?\n");
+                printf("(V) - Voltar\n");
+                do {
+                scanf(" %c", &idchar);
+                if (toupper(idchar) == 'V')
+                    return 1;
+                id = atoi(idchar);
+                } while(id != 0 && id != 1 && id != 2);
+                fseek(arq, sizeof(save) * id, SEEK_SET);
+            }
+            printf("Digite seu nome (maximo de 8 caracteres): ");
+            fflush(stdin);
+            fgets(novo_jogador.nomejogador, 8, stdin);
+            novo_jogador.nomejogador[strlen(novo_jogador.nomejogador)-1] = '\0';
 
-void sair()
-{
-    printf("Encerrando o jogo, ateh a proxima!\n");
-}
+            // salvar os outros dados do jogador
+            novo_jogador.identificador = id;
+            novo_jogador.totalpts = 0;
+            novo_jogador.ultimafase = 1;
+            novo_jogador.vidas = 3;
 
-void hidecursor() // https://stackoverflow.com/questions/30126490/how-to-hide-console-cursor-in-c
-{
-   HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-   CONSOLE_CURSOR_INFO info;
-   info.dwSize = 100;
-   info.bVisible = FALSE;
-   SetConsoleCursorInfo(consoleHandle, &info);
-}
 
-void movimentacao(char lolo, int x, int y)
-{
-    char caracter;
-    int oldX = x, oldY = y;
-
-    hidecursor();
-    gotoxy(x, y);
-    while (caracter != ESC)
-    {
-        gotoxy(oldX, oldY);
-        printf(" ");
-        gotoxy(x, y);
-        printf("%c", lolo);
-        caracter = getch();
-        oldX = x;
-        oldY = y;
-        switch (caracter)
-        {
-            case S_CIMA:  if (y != 2) // limite da borda (ainda precisa colocar uma funcao aqui p testar os blocos)
-                            y--;
-                          break;
-            case S_BAIXO: if (y != 12)
-                            y++;
-                          break;
-            case S_ESQ:   if (x != 2)
-                            x--;
-                          break;
-            case S_DIR:   if (x != 12)
-                            x++;
-                          break;
+            // escrever os dados no arquivo binario
+            if(fwrite(&novo_jogador,sizeof(save), 1, arq) != 1)
+                printf("Erro na escrita do save!\n");
         }
     }
-    gotoxy(13,13); // so pra nao retornar a mensagem q finalizou em cima da fase
+    fclose(arq);
+    return 0;
+
 }
 
-void le_mapa(int numerofase)
+// Função para carregar um jogo salvo
+void carregarJogo()
 {
+    save buffer;
     FILE *arq;
-    int x, y;
-    char letra, lolo, nome[10];
+    int id;
+    // abre o arquivo dos saves
+    if(!(arq = fopen("saves.bin", "r+b")))
+        printf("Erro na abertura do arquivo!\n");
+    else {
+        // imprime na tela os dados
+        imprime_saves(arq);
+        // solicita o jogo que o usuario deseja acessar
+        printf("Digite o id que deseja acessar: \n");
+        scanf("%d", &id);
+        fseek(arq, sizeof(save)*id, SEEK_SET);
+        if(fread(&buffer, sizeof(save), 1, arq) != 1)
+            printf("Erro na abertura do arquivo!\n");
+    }
+    fclose(arq);
+}
+
+// dado o arquivo saves.bin, com as gravações de todos os jogadores, imprime na tela as
+// informações dos jogadores, com formatação adequada
+void imprime_saves(FILE* arq){
+    save jogador;
+    rewind(arq);
+    // enquanto não chegar no final do arquivo
+    while(!feof(arq))
+    {       // lê o arquivo
+            if(fread(&jogador, sizeof(save), 1, arq) == 1)
+                {
+                // e imprime os saves
+                printf("\nJogador %d\n", jogador.identificador);
+                printf("Nome: %s\n", jogador.nomejogador);
+                printf("Pontos: %d\n", jogador.totalpts);
+                printf("Fase: %d\n", jogador.ultimafase);
+                printf("Vidas: %d\n", jogador.vidas);
+                }
+    }
+}
+
+fase gera_fase(int numerofase)
+{
+    FILE* arq;
+    int linha, coluna;
+    fase fasea;
+    char nome[10];
 
     switch (numerofase)
     {
@@ -172,20 +269,102 @@ void le_mapa(int numerofase)
         perror("Erro ao abrir o arquivo");
     else
     {
-        while (!feof(arq))
-        {
-             letra = getc(arq);
-             printf("%c", letra);
-             if (letra == '@')
-             {
-                lolo = letra;
-                x = wherex()-1; // -1 porque o cursor fica depois do ultimo caracter lido
-                y = wherey();
-             }
+        fasea.tamanhox = 14;
+        fasea.tamanhoy = 14;
+        for (linha = 0; linha < fasea.tamanhox; linha++){
+            for (coluna = 0; coluna < fasea.tamanhoy; coluna++){
+                fasea.elementos[linha][coluna] = getc(arq);
         }
-        movimentacao(lolo, x, y);
     }
     fclose(arq);
+    return fasea;
+    }
+}
+
+
+void imprime_mapa(fase fasea)
+{
+    int linha, coluna;
+
+    for (linha = 0; linha < fasea.tamanhoy; linha++){
+        for (coluna = 0; coluna < fasea.tamanhox; coluna++){
+            printf("%c", fasea.elementos[linha][coluna]);
+        }
+    }
+}
+
+void movimentacao(fase fasea)
+{
+    char caracter, lolo = '@';
+    int x, y;
+    int linha, coluna;
+    int oldX, oldY;
+
+    hidecursor();
+    for (linha = 0; linha < fasea.tamanhoy; linha++){
+        for (coluna = 0; coluna < fasea.tamanhox; coluna++){
+            if (fasea.elementos[linha][coluna] == '@')
+            {
+                x = coluna;
+                y = linha;
+            }
+        }
+    }
+    oldX = x;
+    oldY = y;
+    hidecursor();
+    gotoxy(x, y);
+    while (caracter != ESC)
+    {
+        gotoxy(oldX, oldY);
+        printf(" ");
+        gotoxy(x, y);
+        printf("%c", lolo);
+        caracter = getch();
+        oldX = x;
+        oldY = y;
+        switch (caracter)
+        {
+            case S_CIMA:  contato_lolo(S_CIMA, &x, &y);
+                          break;
+            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y);
+                          break;
+            case S_ESQ:   contato_lolo(S_ESQ, &x, &y);
+                          break;
+            case S_DIR:   contato_lolo(S_DIR, &x, &y);
+                          break;
+        }
+    }
+    gotoxy(13,13); // so pra nao retornar a mensagem q finalizou em cima da fase
+}
+
+void contato_lolo(int seta, int *x, int *y)
+{
+    int novoX = *x, novoY = *y;
+    char caracter;
+
+    switch(seta)
+    {
+        case S_CIMA:  novoY--;
+                      break;
+        case S_BAIXO: novoY++;
+                      break;
+        case S_ESQ:   novoX--;
+                      break;
+        case S_DIR:   novoX++;
+                      break;
+    }
+    gotoxy(novoX, novoY);
+//    caracter = getchar();
+//    gotoxy(30, 10);
+//    printf("%c", caracter);
+//    switch (caracter)
+//    {
+//        case 'P':
+    *x = novoX;
+//
+    *y = novoY;
+//    }
 }
 
 
