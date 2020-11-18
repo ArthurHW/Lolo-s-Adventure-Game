@@ -4,6 +4,8 @@
 #include <string.h>
 #include <conio.h>
 #include<conio2.h>
+#include <string.h>
+
 
 // definição das structs:
 typedef struct gravacao {
@@ -36,8 +38,8 @@ typedef struct jogador_st {
 void menu();
 void imprime_menu(); // funcao para imprimir o menu do jogo
 char validaentrada(); // funcao para validar a entrada da opcao do jogo
-save novoJogo(); // funcao para comecar um novo jogo
-save carregarJogo(); // funcao para carregar um jogo ja comecado
+int novoJogo(); // funcao para comecar um novo jogo
+void carregarJogo(); // funcao para carregar um jogo ja comecado
 void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
 void imprime_saves(FILE*);// dado um save imprime ele na tela formatado
@@ -49,6 +51,7 @@ void imprime_mapa(fase);
 // Função principal
 int main()
 {
+
     menu();
 
     return 0;
@@ -57,25 +60,26 @@ int main()
 
 // Funções Auxiliares
 void menu(){
-
+    int volta = 0;
     char opcao;
-    save jogador;
-    printf("---- Lolo's Adventure ----\n");
 
 
-        imprime_menu();
-        opcao = validaentrada();
-        switch (opcao)
-        {
-            case 'N':   jogador = novoJogo();
-                        break;
-            case 'C':   jogador = carregarJogo();
-                        break;
-            case 'M':   mostraCreditos();
-                        break;
-            case 'S':   sair();
-                        break;
-        }
+        do {
+            printf("---- Lolo's Adventure ----\n");
+            imprime_menu();
+            opcao = validaentrada();
+            switch (opcao)
+            {
+                case 'N':   novoJogo();
+                            break;
+                case 'C':   carregarJogo();
+                            break;
+                case 'M':   mostraCreditos();
+                            break;
+                case 'S':   sair();
+                            break;
+            }
+        } while (opcao != 'S' && volta != 0);
 
 }
 
@@ -87,7 +91,11 @@ void imprime_menu()
 
 void mostraCreditos()
 {
-    printf("Creditos do jogo:\nDesenvolvido por: Vitor Caruso Rodrigues Ferrer (00327023)\n");
+    clrscr();
+    printf("Creditos do jogo:\nDesenvolvido por: Vitor Caruso Rodrigues Ferrer (00327023)\nArthur Henrique Wiebusch (00324318)\n");
+    system("pause");
+    fflush(stdin);
+    clrscr();
 }
 
 void sair()
@@ -114,10 +122,12 @@ char validaentrada()
     return opcao;
 }
 
-save novoJogo()
+// Cria um novo jogo para o usuario
+int novoJogo()
 {
-    int op = 0;
-    int id = 0;
+    char op = '0';
+    char idchar = '0';
+    int id;
     save novo_jogador, buffer;
     FILE* arq;
 
@@ -134,18 +144,25 @@ save novoJogo()
         }
         if(id >= 3){
             printf("Limite de Jogos salvos atingido (3), deseja sobrescrever seus dados?\n(1) - Sim\n(2)- Nao\n");
+            printf("(V) - Voltar\n");
             do{
-                scanf(" %d", &op);
-            } while(op != 1 && op != 2);
+                scanf(" %c", &op);
+            } while(op != '1' && op != '2');
+            if (touper(op) == 'V')
+                return 0;
         }
 
-        if (op != 2){
+        if (op != '2'){
             // solicitar e salvar o nome do jogador
-            if (op == 1){
+            if (op == '1'){
                 imprime_saves(arq);
                 printf("Qual id deseja sobrecrever?\n");
+                printf("(V) - Voltar\n");
                 do {
-                scanf(" %d", &id);
+                scanf(" %c", &idchar);
+                if (toupper(idchar) == 'V')
+                    return 1;
+                id = atoi(idchar);
                 } while(id != 0 && id != 1 && id != 2);
                 fseek(arq, sizeof(save) * id, SEEK_SET);
             }
@@ -165,20 +182,14 @@ save novoJogo()
             if(fwrite(&novo_jogador,sizeof(save), 1, arq) != 1)
                 printf("Erro na escrita do save!\n");
         }
-        else {
-            novo_jogador.identificador = -1;
-            novo_jogador.totalpts = 0;
-            novo_jogador.ultimafase = 0;
-            novo_jogador.vidas = 0;
-            strcpy(novo_jogador.nomejogador, "");
-        }
     }
     fclose(arq);
+    return 0;
 
-    return novo_jogador;
 }
 
-save carregarJogo()
+// Função para carregar um jogo salvo
+void carregarJogo()
 {
     save buffer;
     FILE *arq;
@@ -186,28 +197,30 @@ save carregarJogo()
     // abre o arquivo dos saves
     if(!(arq = fopen("saves.bin", "r+b")))
         printf("Erro na abertura do arquivo!\n");
-    // imprime na tela os dados
     else {
+        // imprime na tela os dados
         imprime_saves(arq);
+        // solicita o jogo que o usuario deseja acessar
         printf("Digite o id que deseja acessar: \n");
         scanf("%d", &id);
         fseek(arq, sizeof(save)*id, SEEK_SET);
-        //if(fread(&buffer, sizeof(save), 1, arq) != 1)
-           // printf("Erro na abertura do arquivo!\n");
+        if(fread(&buffer, sizeof(save), 1, arq) != 1)
+            printf("Erro na abertura do arquivo!\n");
     }
     fclose(arq);
-    return buffer;
 }
 
-
+// dado o arquivo saves.bin, com as gravações de todos os jogadores, imprime na tela as
+// informações dos jogadores, com formatação adequada
 void imprime_saves(FILE* arq){
     save jogador;
     rewind(arq);
+    // enquanto não chegar no final do arquivo
     while(!feof(arq))
-    {
+    {       // lê o arquivo
             if(fread(&jogador, sizeof(save), 1, arq) == 1)
                 {
-                // impressao das informações dos saves
+                // e imprime os saves
                 printf("\nJogador %d\n", jogador.identificador);
                 printf("Nome: %s\n", jogador.nomejogador);
                 printf("Pontos: %d\n", jogador.totalpts);
