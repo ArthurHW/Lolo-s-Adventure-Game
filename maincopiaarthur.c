@@ -40,7 +40,7 @@ save novoJogo(); // funcao para comecar um novo jogo
 save carregarJogo(); // funcao para carregar um jogo ja comecado
 void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
-void imprime_save(save);// dado um save imprime ele na tela formatado
+void imprime_saves(FILE*);// dado um save imprime ele na tela formatado
 fase gera_fase(FILE*);
 void imprime_mapa(fase);
 
@@ -49,13 +49,7 @@ void imprime_mapa(fase);
 // Função principal
 int main()
 {
-    FILE *arq;
-    fase fasea;
-    arq = fopen("fase1.txt", "r");
-    fasea = gera_fase(arq);
-    imprime_mapa(fasea);
     menu();
-    fclose(arq);
 
     return 0;
 }
@@ -122,6 +116,7 @@ char validaentrada()
 
 save novoJogo()
 {
+    char op = 'A';
     int id = 0;
     save novo_jogador, buffer;
     FILE *arq;
@@ -138,24 +133,40 @@ save novoJogo()
             else
                 printf("Erro na leitura do arquivo\n");
         }
+        if(id >= 3){
+            printf("Máximo de Jogos salvos atingido, deseja sobrescrever seus dados?\n(1) - Sim\n(2)- Não\n");
+            do{
+                scanf(" %c", &op);
+                op = toupper(op);
+            } while(op != 'S' && op != 'N');
+        }
+
+        if (op != 'N'){
+            // solicitar e salvar o nome do jogador
+            if (op == 'S'){
+                imprime_saves(arq);
+                printf("Qual id deseja sobrecrever?\n");
+                do {
+                scanf(" %d", &id);
+                } while(id != 0 && id != 1 && id != 2);
+                fseek(arq, sizeof(save) * id, SEEK_SET);
+            }
+            printf("Digite seu nome (maximo de 8 caracteres): ");
+            fflush(stdin);
+            fgets(novo_jogador.nomejogador, 8, stdin);
+            novo_jogador.nomejogador[strlen(novo_jogador.nomejogador)-1] = '\0';
+
+            // salvar os outros dados do jogador
+            novo_jogador.identificador = id;
+            novo_jogador.totalpts = 0;
+            novo_jogador.ultimafase = 1;
+            novo_jogador.vidas = 3;
 
 
-        // solicitar e salvar o nome do jogador
-        printf("Digite seu nome (maximo de 8 caracteres): ");
-        fflush(stdin);
-        fgets(novo_jogador.nomejogador, 8, stdin);
-        novo_jogador.nomejogador[strlen(novo_jogador.nomejogador)-1] = '\0';
-
-        // salvar os outros dados do jogador
-        novo_jogador.identificador = id;
-        novo_jogador.totalpts = 0;
-        novo_jogador.ultimafase = 1;
-        novo_jogador.vidas = 3;
-
-        // escrever os dados no arquivo binario
-        if(fwrite(&novo_jogador,sizeof(save), 1, arq) != 1)
-            printf("Erro na escrita do save!\n");
-
+            // escrever os dados no arquivo binario
+            if(fwrite(&novo_jogador,sizeof(save), 1, arq) != 1)
+                printf("Erro na escrita do save!\n");
+        }
     }
     fclose(arq);
 
@@ -172,30 +183,33 @@ save carregarJogo()
         printf("Erro na abertura do arquivo!\n");
     // imprime na tela os dados
     else {
-        while(!feof(arq)){
-            if(fread(&buffer, sizeof(save), 1, arq) == 1)
-                imprime_save(buffer);
-        }
-        rewind(arq);
+        imprime_saves(arq);
         printf("Digite o id que deseja acessar: \n");
         scanf("%d", &id);
-        fseek(arq, sizeof(save), id);
-        if(fread(&buffer, sizeof(save), 1, arq) != 1)
-            printf("Erro na abertura do arquivo!\n");
+        fseek(arq, sizeof(save)*id, SEEK_SET);
+        //if(fread(&buffer, sizeof(save), 1, arq) != 1)
+           // printf("Erro na abertura do arquivo!\n");
     }
     fclose(arq);
     return buffer;
 }
 
 
-void imprime_save(save jogador){
-    // impressao das informações dos saves
-    printf("\nJogador %d\n", jogador.identificador);
-    printf("Nome: %s\n", jogador.nomejogador);
-    printf("Pontos: %d\n", jogador.totalpts);
-    printf("Fase: %d\n", jogador.ultimafase);
-    printf("Vidas: %d\n", jogador.vidas);
-
+void imprime_saves(FILE* arq){
+    save jogador;
+    rewind(arq);
+    while(!feof(arq))
+    {
+            if(fread(&jogador, sizeof(save), 1, arq) == 1)
+                {
+                // impressao das informações dos saves
+                printf("\nJogador %d\n", jogador.identificador);
+                printf("Nome: %s\n", jogador.nomejogador);
+                printf("Pontos: %d\n", jogador.totalpts);
+                printf("Fase: %d\n", jogador.ultimafase);
+                printf("Vidas: %d\n", jogador.vidas);
+                }
+    }
 }
 
 fase gera_fase(FILE *arq)
