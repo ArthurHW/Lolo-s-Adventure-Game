@@ -59,7 +59,7 @@ int main()
 void menu(){
 
     char opcao;
-    save jogo;
+    save jogador;
     printf("---- Lolo's Adventure ----\n");
 
 
@@ -67,9 +67,9 @@ void menu(){
         opcao = validaentrada();
         switch (opcao)
         {
-            case 'N':   jogo = novoJogo();
+            case 'N':   jogador = novoJogo();
                         break;
-            case 'C':   jogo = carregarJogo();
+            case 'C':   jogador = carregarJogo();
                         break;
             case 'M':   mostraCreditos();
                         break;
@@ -116,10 +116,10 @@ char validaentrada()
 
 save novoJogo()
 {
-    char op = 'A';
+    int op = 0;
     int id = 0;
     save novo_jogador, buffer;
-    FILE *arq;
+    FILE* arq;
 
     // abrir o arquivo com os saves
     if(!(arq = fopen("saves.bin", "r+b")))
@@ -130,20 +130,18 @@ save novoJogo()
         while(!feof(arq)){
             if(fread(&buffer, sizeof(save), 1, arq) == 1)
                 id++;
-            else
-                printf("Erro na leitura do arquivo\n");
+
         }
         if(id >= 3){
-            printf("Máximo de Jogos salvos atingido, deseja sobrescrever seus dados?\n(1) - Sim\n(2)- Não\n");
+            printf("Limite de Jogos salvos atingido (3), deseja sobrescrever seus dados?\n(1) - Sim\n(2)- Nao\n");
             do{
-                scanf(" %c", &op);
-                op = toupper(op);
-            } while(op != 'S' && op != 'N');
+                scanf(" %d", &op);
+            } while(op != 1 && op != 2);
         }
 
-        if (op != 'N'){
+        if (op != 2){
             // solicitar e salvar o nome do jogador
-            if (op == 'S'){
+            if (op == 1){
                 imprime_saves(arq);
                 printf("Qual id deseja sobrecrever?\n");
                 do {
@@ -166,6 +164,13 @@ save novoJogo()
             // escrever os dados no arquivo binario
             if(fwrite(&novo_jogador,sizeof(save), 1, arq) != 1)
                 printf("Erro na escrita do save!\n");
+        }
+        else {
+            novo_jogador.identificador = -1;
+            novo_jogador.totalpts = 0;
+            novo_jogador.ultimafase = 0;
+            novo_jogador.vidas = 0;
+            strcpy(novo_jogador.nomejogador, "");
         }
     }
     fclose(arq);
