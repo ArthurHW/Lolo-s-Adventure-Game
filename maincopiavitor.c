@@ -174,10 +174,6 @@ void le_mapa(int numerofase)
     {
         while (!feof(arq))
         {
-//            if (fgets(linha, 12, arq) == NULL)
-//                perror("Erro ao ler a linha");
-//            else
-//                printf("%s", linha);
              letra = getc(arq);
              printf("%c", letra);
              if (letra == '@')
