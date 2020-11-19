@@ -24,20 +24,9 @@ typedef struct gravacao {
 typedef struct fase {
     int tamanhox;
     int tamanhoy;
+    int inimigos;
     char elementos[14][14]; // 13 por 14 ele nao lia uma parte do mapa ai tive que botar 14x14
 }fase;
-
-typedef struct ponto {
-    char x;
-    char y;
-}ponto;
-
-typedef struct jogador_st {
-    int totalpts;
-    int fase;
-    int vidas;
-    char nomejogador[9];
-}jogador;
 
 // protótipos das funções auxiliares:
 void menu();
@@ -48,23 +37,22 @@ void carregarJogo(); // funcao para carregar um jogo ja comecado
 void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
 void imprime_saves(FILE*);// dado um save imprime ele na tela formatado
-fase gera_fase(int); // dado o numero de uma fase, retorna uma struct fase
-void movimentacao(fase*, jogador*); // funcao para a movimentacao, dada uma fase e um save
-void imprime_mapa(fase); // imprime a fase
+fase gera_fase(int); // dado o numero de uma fase, preenche os elementos daquela fase em uma matriz contendo suas posicoes, e imprime a fase na tela
+void movimentacao(fase*, save*); // funcao para a movimentacao, dada uma fase e um save
 void hidecursor(); // funcao pra esconder o cursor
-void contato_lolo(int, int*, int*, int*, fase*, jogador*);
+void contato_lolo(int, int*, int*, int*, fase*, save*);
  // contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para o x, y, contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
 
 // Função principal
 int main()
 {
-    jogador player1 = {0, 2, 0, "Teste"};
+    save save1 = {0, 0, 2, 0, "Teste"};
     fase fase1;
 
 //    menu();
-    fase1 = gera_fase(player1.fase);
-    imprime_mapa(fase1);
-    movimentacao(&fase1, &player1);
+    fase1 = gera_fase(save1.ultimafase);
+//    imprime_mapa(fase1);
+    movimentacao(&fase1, &save1);
 
     return 0;
 }
@@ -273,11 +261,15 @@ fase gera_fase(int numerofase)
         perror("Erro ao abrir o arquivo");
     else
     {
+        fasea.inimigos = 0;
         fasea.tamanhox = 14;
         fasea.tamanhoy = 14;
         for (linha = 0; linha < fasea.tamanhox; linha++){
             for (coluna = 0; coluna < fasea.tamanhoy; coluna++){
                 fasea.elementos[linha][coluna] = getc(arq); // preenche os elementos da fase
+                if (fasea.elementos[linha][coluna] == 'E')
+                    fasea.inimigos++;
+                printf("%c", fasea.elementos[linha][coluna]); // imprime esses elementos
         }
     }
     fclose(arq);
@@ -285,19 +277,7 @@ fase gera_fase(int numerofase)
     }
 }
 
-
-void imprime_mapa(fase fasea)
-{
-    int linha, coluna;
-
-    for (linha = 0; linha < fasea.tamanhoy; linha++){
-        for (coluna = 0; coluna < fasea.tamanhox; coluna++){
-            printf("%c", fasea.elementos[linha][coluna]); // imprime os elementos da fase na tela
-        }
-    }
-}
-
-void movimentacao(fase *fasea, jogador *playera)
+void movimentacao(fase *fasea, save *savea)
 {
     char caracter, lolo = 'L';
     int x, y, poder = 0;
@@ -331,13 +311,13 @@ void movimentacao(fase *fasea, jogador *playera)
         oldY = y;
         switch (caracter)
         {
-            case S_CIMA:  contato_lolo(S_CIMA, &x, &y, &poder, fasea, playera);
+            case S_CIMA:  contato_lolo(S_CIMA, &x, &y, &poder, fasea, savea);
                           break;
-            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y, &poder, fasea, playera);
+            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y, &poder, fasea, savea);
                           break;
-            case S_ESQ:   contato_lolo(S_ESQ, &x, &y, &poder, fasea, playera);
+            case S_ESQ:   contato_lolo(S_ESQ, &x, &y, &poder, fasea, savea);
                           break;
-            case S_DIR:   contato_lolo(S_DIR, &x, &y, &poder, fasea, playera);
+            case S_DIR:   contato_lolo(S_DIR, &x, &y, &poder, fasea, savea);
                           break;
         }
         gotoxy(13,13);
@@ -345,7 +325,7 @@ void movimentacao(fase *fasea, jogador *playera)
     }
 }
 
-void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, jogador *playera)
+void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *savea)
 {
     int novoX = *x-1, novoY = *y-1; // -1 porque eles vao ser posicoes da matriz
     char caracter;
@@ -365,17 +345,35 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, jogador *pl
     caracter = fasea->elementos[novoY][novoX];
     switch (caracter)
     {
-        case ' ': *x = novoX+1; // e volta para o +1, ja que agora eles sao coordenadas
-                  *y = novoY+1;
+        case ' ':
+            *x = novoX+1; // e volta para o +1, ja que agora eles sao coordenadas
+            *y = novoY+1;
+            break;
+        case 'C':
+            fasea->elementos[novoY][novoX] = ' ';
+            *x = novoX+1;
+            *y = novoY+1;
+            (*poder)++;
                   break;
-        case 'C': fasea->elementos[novoY][novoX] = ' ';
-                  *x = novoX+1;
-                  *y = novoY+1;
-                  (*poder)++;
-                  break;
-        case 'L': *x = novoX+1; // sem isso aqui o lolo nao pode se mover para a posicao inicial
-                  *y = novoY+1;
-                  break;
-
+        case 'L':
+            *x = novoX+1; // sem isso aqui o lolo nao pode se mover para a posicao inicial
+            *y = novoY+1;
+            break;
+        case 'E':
+            if (*poder != 0) // se o lolo tiver poder
+            {
+                fasea->elementos[novoY][novoX] = ' ';
+                *x = novoX+1;
+                *y = novoY+1;
+                (*poder)--; // diminui 1 do poder e dos inimigos
+                fasea->inimigos--;
+            }
+            break;
+        case 'T':
+            if (fasea->inimigos == 0) // caso nao haja mais nenhum inimigo, ele pode pegar um bau
+            {
+                *x = novoX+1;
+                *y = novoY+1;
+            }
     }
 }
