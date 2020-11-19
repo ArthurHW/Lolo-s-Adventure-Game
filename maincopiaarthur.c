@@ -45,7 +45,7 @@ void instrucoes(); // imprime na tela as instruções do jogo
 int imprime_saves(FILE*);// dado um arquivo de saves, imprime todos os saves dele na tela formatados; retorna o número de saves do arquivo
 void mostra_info(save); // dado um save passado por cópia, mostra na tela seu nome, fase atual, total de pts e número de vidas.
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
-
+void movimenta_inimigo(ponto*, fase*);
 
 // Função principal
 int main()
@@ -322,6 +322,48 @@ void salvar_arquivo(save jogador){
         fclose(arq);
     }
 }
+
+void movimenta_inimigo(ponto* inimigo, fase* fasea){
+    int novoX, novoY;
+    int direcao;
+    char caracter;
+    srand(time(NULL));
+    do{
+        novoX = inimigo->x - 1;
+        novoY = inimigo->y - 1;
+        direcao = (rand() % 4);
+        switch(direcao) // atualiza o x ou o y dependendo do resultado da função rand()
+        {
+            case 0:  novoY--;
+                        break;
+            case 1:  novoY++;
+                        break;
+            case 2:   novoX--;
+                         break;
+            case 3:   novoX++;
+                        break;
+        }
+        caracter = fasea->elementos[novoY][novoX];
+    } while (caracter != ' ' && caracter != 'L');
+    gotoxy(inimigo->x, inimigo->y);
+    cprintf(" ");
+    switch (caracter)
+    {
+        case ' ':
+            inimigo->x = novoX+1; // e volta para o +1, ja que agora eles sao coordenadas
+            inimigo->y = novoY+1;
+            break;
+        case 'L':
+            inimigo->x = novoX+1;
+            inimigo->y = novoY+1;
+            // reset()
+            break;
+        default: break;
+    }
+    gotoxy(inimigo->x, inimigo->y);
+    cprintf("E");
+}
+
 
 
 
