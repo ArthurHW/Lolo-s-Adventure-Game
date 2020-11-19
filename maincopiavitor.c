@@ -367,7 +367,7 @@ void contato_lolo(int seta, int *x, int *y, fase fasea, jogador *playera)
         case ' ': *x = novoX+1; // e volta para o +1, ja que agora eles sao coordenadas
                   *y = novoY+1;
                    break;
-        case 'C': fasea.elementos[novoY][novoX] = ' '; // tentativa de deixar o elemento da matriz na posicao novoY novoX vazio
+        case 'C': fasea.elementos[novoY][novoX] = ' '; // tentativa de deixar o elemento da matriz na posicao novoY novoX vazio -> fase precisa ser um ponteiro
                   *x = novoX+1;
                   *y = novoY+1;
                   playera->vidas++;
