@@ -9,5 +9,5 @@ PE B     PPPP
 P  B        P
 P PC P BBP  P
 P    P   PC P
-P   @P E    P
+P   LP E    P
 PPPPPPPPPPPPP

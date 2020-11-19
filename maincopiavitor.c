@@ -49,20 +49,21 @@ void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
 void imprime_saves(FILE*);// dado um save imprime ele na tela formatado
 fase gera_fase(int); // dado o numero de uma fase, retorna uma struct fase
-void movimentacao(fase); // funcao para a movimentacao, dada uma fase
+void movimentacao(fase, jogador*); // funcao para a movimentacao, dada uma fase e um save
 void imprime_mapa(fase); // imprime a fase
 void hidecursor(); // funcao pra esconder o cursor
-void contato_lolo(int, int*, int*, fase);
+void contato_lolo(int, int*, int*, fase, jogador*); // contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para o x e o y e um save (para atualizar os dados)
 
 // Função principal
 int main()
 {
+    jogador player1 = {0, 2, 0, "Teste"};
     fase fase1;
-//    menu();
-    fase1 = gera_fase(2);
-    imprime_mapa(fase1);
-    movimentacao(fase1);
 
+//    menu();
+    fase1 = gera_fase(player1.fase);
+    imprime_mapa(fase1);
+    movimentacao(fase1, &player1);
 
     return 0;
 }
@@ -295,9 +296,9 @@ void imprime_mapa(fase fasea)
     }
 }
 
-void movimentacao(fase fasea)
+void movimentacao(fase fasea, jogador *playera)
 {
-    char caracter, lolo = '@';
+    char caracter, lolo = 'L';
     int x, y;
     int linha, coluna;
     int oldX, oldY;
@@ -305,7 +306,7 @@ void movimentacao(fase fasea)
     hidecursor();
     for (linha = 0; linha < fasea.tamanhoy; linha++){
         for (coluna = 0; coluna < fasea.tamanhox; coluna++){
-            if (fasea.elementos[linha][coluna] == '@')
+            if (fasea.elementos[linha][coluna] == 'L')
             {
                 x = coluna+1; // +1 porque a matriz comeca em [0][0] e as coordenada em (1,1)
                 y = linha+1;
@@ -327,22 +328,23 @@ void movimentacao(fase fasea)
         oldY = y;
         switch (caracter)
         {
-            case S_CIMA:  contato_lolo(S_CIMA, &x, &y, fasea);
+            case S_CIMA:  contato_lolo(S_CIMA, &x, &y, fasea, playera);
                           break;
-            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y, fasea);
+            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y, fasea, playera);
                           break;
-            case S_ESQ:   contato_lolo(S_ESQ, &x, &y, fasea);
+            case S_ESQ:   contato_lolo(S_ESQ, &x, &y, fasea, playera);
                           break;
-            case S_DIR:   contato_lolo(S_DIR, &x, &y, fasea);
+            case S_DIR:   contato_lolo(S_DIR, &x, &y, fasea, playera);
                           break;
         }
     }
     gotoxy(13,13); // so pra nao retornar a mensagem q finalizou em cima da fase
+    printf("\n%d", playera->vidas);
 }
 
-void contato_lolo(int seta, int *x, int *y, fase fasea)
+void contato_lolo(int seta, int *x, int *y, fase fasea, jogador *playera)
 {
-    int novoX = *x-1, novoY = *y-1; // -1 porque eles vao seres posicoes da matriz
+    int novoX = *x-1, novoY = *y-1; // -1 porque eles vao ser posicoes da matriz
     char caracter;
 
     switch(seta) // atualiza o x ou o y dependendo da tecla apertada pelo usuario
@@ -358,20 +360,21 @@ void contato_lolo(int seta, int *x, int *y, fase fasea)
     }
     gotoxy(novoX, novoY);
     caracter = fasea.elementos[novoY][novoX];
+
+
     switch (caracter)
     {
         case ' ': *x = novoX+1; // e volta para o +1, ja que agora eles sao coordenadas
                   *y = novoY+1;
                    break;
-        case 'C': *x = novoX+1;
+        case 'C': fasea.elementos[novoY][novoX] = ' '; // tentativa de deixar o elemento da matriz na posicao novoY novoX vazio
+                  *x = novoX+1;
+                  *y = novoY+1;
+                  playera->vidas++;
+                   break;
+        case 'L': *x = novoX+1; // sem isso aqui o lolo nao pode se mover para a posicao inicial
                   *y = novoY+1;
                    break;
-        case '@': *x = novoX+1; // sem isso aqui o lolo nao pode se mover para a posicao inicial
-                  *y = novoY+1;
-                   break;
+
     }
 }
-
-
-
-
