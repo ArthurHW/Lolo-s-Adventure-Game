@@ -52,14 +52,14 @@ fase gera_fase(int); // dado o numero de uma fase, retorna uma struct fase
 void movimentacao(fase); // funcao para a movimentacao, dada uma fase
 void imprime_mapa(fase); // imprime a fase
 void hidecursor(); // funcao pra esconder o cursor
-void contato_lolo(int, int*, int*);
+void contato_lolo(int, int*, int*, fase);
 
 // Função principal
 int main()
 {
     fase fase1;
 //    menu();
-    fase1 = gera_fase(1);
+    fase1 = gera_fase(2);
     imprime_mapa(fase1);
     movimentacao(fase1);
 
@@ -256,7 +256,7 @@ fase gera_fase(int numerofase)
     fase fasea;
     char nome[10];
 
-    switch (numerofase)
+    switch (numerofase) // coloca o nome do arquivo dependendo do numero da fase
     {
         case 1: strncpy(nome, "Fase1.txt", 10);
                 break;
@@ -275,7 +275,7 @@ fase gera_fase(int numerofase)
         fasea.tamanhoy = 14;
         for (linha = 0; linha < fasea.tamanhox; linha++){
             for (coluna = 0; coluna < fasea.tamanhoy; coluna++){
-                fasea.elementos[linha][coluna] = getc(arq);
+                fasea.elementos[linha][coluna] = getc(arq); // preenche os elementos da fase
         }
     }
     fclose(arq);
@@ -290,7 +290,7 @@ void imprime_mapa(fase fasea)
 
     for (linha = 0; linha < fasea.tamanhoy; linha++){
         for (coluna = 0; coluna < fasea.tamanhox; coluna++){
-            printf("%c", fasea.elementos[linha][coluna]);
+            printf("%c", fasea.elementos[linha][coluna]); // imprime os elementos da fase na tela
         }
     }
 }
@@ -307,7 +307,7 @@ void movimentacao(fase fasea)
         for (coluna = 0; coluna < fasea.tamanhox; coluna++){
             if (fasea.elementos[linha][coluna] == '@')
             {
-                x = coluna+1;
+                x = coluna+1; // +1 porque a matriz comeca em [0][0] e as coordenada em (1,1)
                 y = linha+1;
             }
         }
@@ -316,7 +316,7 @@ void movimentacao(fase fasea)
     oldY = y;
     hidecursor();
     gotoxy(x, y);
-    while (caracter != ESC)
+    while (caracter != ESC) // o usuario pode se movimentar ate clicar esc (da para por aqui a tecla para voltar para o menu)
     {
         gotoxy(oldX, oldY);
         printf(" ");
@@ -327,25 +327,25 @@ void movimentacao(fase fasea)
         oldY = y;
         switch (caracter)
         {
-            case S_CIMA:  contato_lolo(S_CIMA, &x, &y);
+            case S_CIMA:  contato_lolo(S_CIMA, &x, &y, fasea);
                           break;
-            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y);
+            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y, fasea);
                           break;
-            case S_ESQ:   contato_lolo(S_ESQ, &x, &y);
+            case S_ESQ:   contato_lolo(S_ESQ, &x, &y, fasea);
                           break;
-            case S_DIR:   contato_lolo(S_DIR, &x, &y);
+            case S_DIR:   contato_lolo(S_DIR, &x, &y, fasea);
                           break;
         }
     }
     gotoxy(13,13); // so pra nao retornar a mensagem q finalizou em cima da fase
 }
 
-void contato_lolo(int seta, int *x, int *y)
+void contato_lolo(int seta, int *x, int *y, fase fasea)
 {
-    int novoX = *x, novoY = *y;
+    int novoX = *x-1, novoY = *y-1; // -1 porque eles vao seres posicoes da matriz
     char caracter;
 
-    switch(seta)
+    switch(seta) // atualiza o x ou o y dependendo da tecla apertada pelo usuario
     {
         case S_CIMA:  novoY--;
                       break;
@@ -357,16 +357,19 @@ void contato_lolo(int seta, int *x, int *y)
                       break;
     }
     gotoxy(novoX, novoY);
-//    caracter = getchar();
-//    gotoxy(30, 10);
-//    printf("%c", caracter);
-//    switch (caracter)
-//    {
-//        case 'P':
-    *x = novoX;
-//
-    *y = novoY;
-//    }
+    caracter = fasea.elementos[novoY][novoX];
+    switch (caracter)
+    {
+        case ' ': *x = novoX+1; // e volta para o +1, ja que agora eles sao coordenadas
+                  *y = novoY+1;
+                   break;
+        case 'C': *x = novoX+1;
+                  *y = novoY+1;
+                   break;
+        case '@': *x = novoX+1; // sem isso aqui o lolo nao pode se mover para a posicao inicial
+                  *y = novoY+1;
+                   break;
+    }
 }
 
 
