@@ -52,7 +52,8 @@ fase gera_fase(int); // dado o numero de uma fase, retorna uma struct fase
 void movimentacao(fase*, jogador*); // funcao para a movimentacao, dada uma fase e um save
 void imprime_mapa(fase); // imprime a fase
 void hidecursor(); // funcao pra esconder o cursor
-void contato_lolo(int, int*, int*, fase*, jogador*); // contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para o x e o y e um save (para atualizar os dados)
+void contato_lolo(int, int*, int*, int*, fase*, jogador*);
+ // contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para o x, y, contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
 
 // Função principal
 int main()
@@ -299,7 +300,7 @@ void imprime_mapa(fase fasea)
 void movimentacao(fase *fasea, jogador *playera)
 {
     char caracter, lolo = 'L';
-    int x, y;
+    int x, y, poder = 0;
     int linha, coluna;
     int oldX, oldY;
 
@@ -316,6 +317,8 @@ void movimentacao(fase *fasea, jogador *playera)
     oldX = x;
     oldY = y;
     hidecursor();
+    gotoxy(13,13); // posiciona antes pra aparecer a info zerada
+    printf("\n%d", poder); // funcao da info
     gotoxy(x, y);
     while (caracter != ESC) // o usuario pode se movimentar ate clicar esc (da para por aqui a tecla para voltar para o menu)
     {
@@ -328,21 +331,21 @@ void movimentacao(fase *fasea, jogador *playera)
         oldY = y;
         switch (caracter)
         {
-            case S_CIMA:  contato_lolo(S_CIMA, &x, &y, fasea, playera);
+            case S_CIMA:  contato_lolo(S_CIMA, &x, &y, &poder, fasea, playera);
                           break;
-            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y, fasea, playera);
+            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y, &poder, fasea, playera);
                           break;
-            case S_ESQ:   contato_lolo(S_ESQ, &x, &y, fasea, playera);
+            case S_ESQ:   contato_lolo(S_ESQ, &x, &y, &poder, fasea, playera);
                           break;
-            case S_DIR:   contato_lolo(S_DIR, &x, &y, fasea, playera);
+            case S_DIR:   contato_lolo(S_DIR, &x, &y, &poder, fasea, playera);
                           break;
         }
+        gotoxy(13,13);
+        printf("\n%d", poder); // funcao da info
     }
-    gotoxy(13,13); // so pra nao retornar a mensagem q finalizou em cima da fase
-    printf("\n%d", playera->vidas);
 }
 
-void contato_lolo(int seta, int *x, int *y, fase *fasea, jogador *playera)
+void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, jogador *playera)
 {
     int novoX = *x-1, novoY = *y-1; // -1 porque eles vao ser posicoes da matriz
     char caracter;
@@ -368,7 +371,7 @@ void contato_lolo(int seta, int *x, int *y, fase *fasea, jogador *playera)
         case 'C': fasea->elementos[novoY][novoX] = ' ';
                   *x = novoX+1;
                   *y = novoY+1;
-                  playera->vidas++;
+                  (*poder)++;
                   break;
         case 'L': *x = novoX+1; // sem isso aqui o lolo nao pode se mover para a posicao inicial
                   *y = novoY+1;
