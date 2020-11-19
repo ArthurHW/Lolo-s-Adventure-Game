@@ -5,7 +5,14 @@
 #include <conio.h>
 #include<conio2.h>
 #include <string.h>
+#include <time.h>
+#include <windows.h>
 
+#define S_CIMA 72
+#define S_BAIXO 80
+#define S_ESQ 75
+#define S_DIR 77
+#define ESC 27
 
 // definição das structs:
 typedef struct gravacao {
@@ -19,7 +26,8 @@ typedef struct gravacao {
 typedef struct fase {
     int tamanhox;
     int tamanhoy;
-    char elementos[13][14];
+    int inimigos;
+    char elementos[14][14];
 }fase;
 
 typedef struct ponto {
@@ -43,23 +51,25 @@ void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
 void instrucoes(); // imprime na tela as instruções do jogo
 int imprime_saves(FILE*);// dado um arquivo de saves, imprime todos os saves dele na tela formatados; retorna o número de saves do arquivo
-void mostra_info(save); // dado um save passado por cópia, mostra na tela seu nome, fase atual, total de pts e número de vidas.
+void mostra_info(save, int); // dado um save passado por cópia, mostra na tela seu nome, fase atual, total de pts e número de vidas.
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
 void movimenta_inimigo(ponto*, fase*);
+void contato_lolo(int, int*, int*, int*, fase*, save*);
+void movimentacao(fase*, save*);
+void hidecursor();
+fase gera_fase(int);
+
+
 
 // Função principal
 int main()
 {
-    save jogador;
-    int encerrar; //caso seja 1 encerrar o programa
-    encerrar = menu(&jogador);
-    if (encerrar){
-        return 0;
-    }
-    else {
-        gotoxy(13,13);
-        mostra_info(jogador);
-    }
+    save save1 = {0, 0, 2, 3, "Teste"};
+    fase fase1;
+
+//    menu();
+    fase1 = gera_fase(save1.ultimafase);
+    movimentacao(&fase1, &save1);
 
     return 0;
 }
@@ -305,9 +315,9 @@ int imprime_saves(FILE* arq){
 }
 
 // função para mostrar as informações do jogador durante o jogo
-void mostra_info(save jogador){
+void mostra_info(save jogador, int poder){
 
-    cprintf("Nome: %s   Fase: %d   Pontos: %d   Vidas: %d   ",jogador.nomejogador, jogador.ultimafase, jogador.totalpts, jogador.vidas);
+    cprintf("Fase: %d\nCoracoes: %d\nPontos: %d\nVidas: %d", jogador.ultimafase, poder, jogador.totalpts, jogador.vidas);
 }
 
 // função para salvar os dados do save a cada fase
@@ -323,6 +333,195 @@ void salvar_arquivo(save jogador){
     }
 }
 
+void hidecursor() // https://stackoverflow.com/questions/30126490/how-to-hide-console-cursor-in-c
+{
+   HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+   CONSOLE_CURSOR_INFO info;
+   info.dwSize = 100;
+   info.bVisible = FALSE;
+   SetConsoleCursorInfo(consoleHandle, &info);
+}
+
+
+
+fase gera_fase(int numerofase)
+{
+    FILE* arq;
+    int linha, coluna;
+    fase fasea;
+    char nome[10];
+
+    switch (numerofase) // coloca o nome do arquivo dependendo do numero da fase
+    {
+        case 1: strncpy(nome, "Fase1.txt", 10);
+                break;
+        case 2: strncpy(nome, "Fase2.txt", 10);
+                break;
+        case 3: strncpy(nome, "Fase3.txt", 10);
+                break;
+    }
+
+    arq = fopen(nome, "r");
+    if (arq == NULL)
+        perror("Erro ao abrir o arquivo");
+    else
+    {
+        fasea.inimigos = 0;
+        fasea.tamanhox = 14;
+        fasea.tamanhoy = 14;
+        for (linha = 0; linha < fasea.tamanhox; linha++){
+            for (coluna = 0; coluna < fasea.tamanhoy; coluna++){
+                fasea.elementos[linha][coluna] = getc(arq); // preenche os elementos da fase
+                if (fasea.elementos[linha][coluna] == 'E')
+                    fasea.inimigos++;
+                printf("%c", fasea.elementos[linha][coluna]); // imprime esses elementos
+        }
+    }
+    fclose(arq);
+    return fasea;
+    }
+}
+
+void movimentacao(fase *fasea, save *jogador)
+{
+    char caracter, lolo = 'L';
+    ponto inimigos[fasea->inimigos];
+    int contador = 0;
+    int x, y, poder = 0;
+    int linha, coluna;
+    int oldX, oldY;
+
+    hidecursor();
+    for (linha = 0; linha < fasea->tamanhoy; linha++){
+        for (coluna = 0; coluna < fasea->tamanhox; coluna++){
+            if (fasea->elementos[linha][coluna] == 'L')
+            {
+                x = coluna+1; // +1 porque a matriz comeca em [0][0] e as coordenada em (1,1)
+                y = linha+1;
+            }
+            if (fasea->elementos[linha][coluna] == 'E'){
+                (inimigos[contador]).x = coluna + 1;
+                (inimigos[contador]).y = linha + 1;
+                contador++;
+
+            }
+        }
+    }
+    oldX = x;
+    oldY = y;
+    hidecursor();
+    gotoxy(13,13); // posiciona antes pra aparecer a info zerada
+    printf("\n");
+    mostra_info(*jogador, poder); // funcao da info
+    gotoxy(x, y);
+    while (caracter != ESC) // o usuario pode se movimentar ate clicar esc (da para por aqui a tecla para voltar para o menu)
+    {
+        gotoxy(oldX, oldY);
+        cprintf(" ");
+        gotoxy(x, y);
+        cprintf("%c", lolo);
+        fflush(stdin);
+        caracter = getch();
+        oldX = x;
+        oldY = y;
+        switch (caracter)
+        {
+            case S_CIMA:  contato_lolo(S_CIMA, &x, &y, &poder, fasea, jogador);
+                          break;
+            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y, &poder, fasea, jogador);
+                          break;
+            case S_ESQ:   contato_lolo(S_ESQ, &x, &y, &poder, fasea, jogador);
+                          break;
+            case S_DIR:   contato_lolo(S_DIR, &x, &y, &poder, fasea, jogador);
+                          break;
+        }
+        for (contador = 0; contador < fasea->inimigos; contador++){
+            movimenta_inimigo(&inimigos[contador], fasea);
+        }
+        gotoxy(13,13);
+        printf("\n");
+        mostra_info(*jogador, poder); // funcao da info
+    }
+    salvar_arquivo(*jogador);
+}
+
+void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogador)
+{
+    int novoX = *x-1, novoY = *y-1; // -1 porque eles vao ser posicoes da matriz
+    int blocomovivelnovoX = *x-1, blocomovivelnovoY = *y-1;
+    char caracter;
+
+    switch(seta) // atualiza o x ou o y dependendo da tecla apertada pelo usuario
+    {
+        case S_CIMA:
+            novoY--;
+            blocomovivelnovoY = blocomovivelnovoY - 2; // atualiza a posicao do bloco movivel, ja que eh sempre 1 a mais dependendo da direcao p onde o usuario se moveu
+            break;
+        case S_BAIXO:
+            novoY++;
+            blocomovivelnovoY = blocomovivelnovoY + 2;
+            break;
+        case S_ESQ:
+            novoX--;
+            blocomovivelnovoX = blocomovivelnovoX - 2;
+            break;
+        case S_DIR:
+            novoX++;
+            blocomovivelnovoX = blocomovivelnovoX + 2;
+            break;
+    }
+    gotoxy(novoX, novoY);
+    caracter = fasea->elementos[novoY][novoX];
+    switch (caracter)
+    {
+        case ' ':
+            *x = novoX+1; // e volta para o +1, ja que agora eles sao coordenadas
+            *y = novoY+1;
+            break;
+        case 'C':
+            fasea->elementos[novoY][novoX] = ' '; // apaga a posicao
+            *x = novoX+1;
+            *y = novoY+1;
+            (*poder)++;
+            break;
+        case 'L':
+            fasea->elementos[novoY][novoX] = ' '; // apaga a posicao inicial, p n dar conflio com os blocos moviveis
+            *x = novoX+1;
+            *y = novoY+1;
+            break;
+        case 'E':
+            if (*poder != 0) // se o lolo tiver poder
+            {
+                fasea->elementos[novoY][novoX] = ' ';
+                *x = novoX+1;
+                *y = novoY+1;
+                (*poder)--; // diminui 1 do poder e dos inimigos
+                fasea->inimigos--;
+            }
+            break;
+        case 'T':
+            if (fasea->inimigos == 0) // caso nao haja mais nenhum inimigo, ele pode pegar o bau
+            {
+                fasea->elementos[novoY][novoX] = ' ';
+                *x = novoX+1;
+                *y = novoY+1;
+            }
+            break;
+        case 'B':
+            if (fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == ' ') // caso o espaco que o bloco movivel vai ir seja vazio
+            {
+                fasea->elementos[novoY][novoX] = ' '; // apaga o espaco q tava o bloco movivel
+                *x = novoX+1;
+                *y = novoY+1;
+                fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] = 'B'; // coloca um b na posicao desse novo espaco
+                gotoxy(blocomovivelnovoX+1,blocomovivelnovoY+1); // posiciona e imprime o b (lembrando do +1 por causa da diferenca de posicao da matriz e coordenada)
+                printf("%c", fasea->elementos[blocomovivelnovoY][blocomovivelnovoX]);
+            }
+            break;
+
+    }
+}
+
 void movimenta_inimigo(ponto* inimigo, fase* fasea){
     int novoX, novoY;
     int direcao;
@@ -331,6 +530,7 @@ void movimenta_inimigo(ponto* inimigo, fase* fasea){
     do{
         novoX = inimigo->x - 1;
         novoY = inimigo->y - 1;
+        fasea->elementos[novoX][novoY] = ' ';
         direcao = (rand() % 4);
         switch(direcao) // atualiza o x ou o y dependendo do resultado da função rand()
         {
@@ -343,8 +543,9 @@ void movimenta_inimigo(ponto* inimigo, fase* fasea){
             case 3:   novoX++;
                         break;
         }
-        caracter = fasea->elementos[novoY][novoX];
-    } while (caracter != ' ' && caracter != 'L');
+    caracter = fasea->elementos[novoX][novoY];
+    } while (caracter != ' '  && caracter != 'L');
+    fasea->elementos[novoX][novoY] = 'E';
     gotoxy(inimigo->x, inimigo->y);
     cprintf(" ");
     switch (caracter)
