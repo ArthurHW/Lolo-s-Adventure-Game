@@ -49,10 +49,10 @@ void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
 void imprime_saves(FILE*);// dado um save imprime ele na tela formatado
 fase gera_fase(int); // dado o numero de uma fase, retorna uma struct fase
-void movimentacao(fase, jogador*); // funcao para a movimentacao, dada uma fase e um save
+void movimentacao(fase*, jogador*); // funcao para a movimentacao, dada uma fase e um save
 void imprime_mapa(fase); // imprime a fase
 void hidecursor(); // funcao pra esconder o cursor
-void contato_lolo(int, int*, int*, fase, jogador*); // contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para o x e o y e um save (para atualizar os dados)
+void contato_lolo(int, int*, int*, fase*, jogador*); // contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para o x e o y e um save (para atualizar os dados)
 
 // Função principal
 int main()
@@ -63,7 +63,7 @@ int main()
 //    menu();
     fase1 = gera_fase(player1.fase);
     imprime_mapa(fase1);
-    movimentacao(fase1, &player1);
+    movimentacao(&fase1, &player1);
 
     return 0;
 }
@@ -296,7 +296,7 @@ void imprime_mapa(fase fasea)
     }
 }
 
-void movimentacao(fase fasea, jogador *playera)
+void movimentacao(fase *fasea, jogador *playera)
 {
     char caracter, lolo = 'L';
     int x, y;
@@ -304,9 +304,9 @@ void movimentacao(fase fasea, jogador *playera)
     int oldX, oldY;
 
     hidecursor();
-    for (linha = 0; linha < fasea.tamanhoy; linha++){
-        for (coluna = 0; coluna < fasea.tamanhox; coluna++){
-            if (fasea.elementos[linha][coluna] == 'L')
+    for (linha = 0; linha < fasea->tamanhoy; linha++){
+        for (coluna = 0; coluna < fasea->tamanhox; coluna++){
+            if (fasea->elementos[linha][coluna] == 'L')
             {
                 x = coluna+1; // +1 porque a matriz comeca em [0][0] e as coordenada em (1,1)
                 y = linha+1;
@@ -342,7 +342,7 @@ void movimentacao(fase fasea, jogador *playera)
     printf("\n%d", playera->vidas);
 }
 
-void contato_lolo(int seta, int *x, int *y, fase fasea, jogador *playera)
+void contato_lolo(int seta, int *x, int *y, fase *fasea, jogador *playera)
 {
     int novoX = *x-1, novoY = *y-1; // -1 porque eles vao ser posicoes da matriz
     char caracter;
@@ -359,22 +359,20 @@ void contato_lolo(int seta, int *x, int *y, fase fasea, jogador *playera)
                       break;
     }
     gotoxy(novoX, novoY);
-    caracter = fasea.elementos[novoY][novoX];
-
-
+    caracter = fasea->elementos[novoY][novoX];
     switch (caracter)
     {
         case ' ': *x = novoX+1; // e volta para o +1, ja que agora eles sao coordenadas
                   *y = novoY+1;
-                   break;
-        case 'C': fasea.elementos[novoY][novoX] = ' '; // tentativa de deixar o elemento da matriz na posicao novoY novoX vazio -> fase precisa ser um ponteiro
+                  break;
+        case 'C': fasea->elementos[novoY][novoX] = ' ';
                   *x = novoX+1;
                   *y = novoY+1;
                   playera->vidas++;
-                   break;
+                  break;
         case 'L': *x = novoX+1; // sem isso aqui o lolo nao pode se mover para a posicao inicial
                   *y = novoY+1;
-                   break;
+                  break;
 
     }
 }
