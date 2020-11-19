@@ -48,7 +48,7 @@ void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados d
 // Função principal
 int main()
 {
-    save save1 = {0, 0, 2, 3, "Teste"};
+    save save1 = {0, 0, 1, 3, "Teste"};
     fase fase1;
 
 //    menu();
@@ -332,18 +332,27 @@ void movimentacao(fase *fasea, save *jogador)
 void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogador)
 {
     int novoX = *x-1, novoY = *y-1; // -1 porque eles vao ser posicoes da matriz
+    int blocomovivelnovoX = *x-1, blocomovivelnovoY = *y-1;
     char caracter;
 
     switch(seta) // atualiza o x ou o y dependendo da tecla apertada pelo usuario
     {
-        case S_CIMA:  novoY--;
-                      break;
-        case S_BAIXO: novoY++;
-                      break;
-        case S_ESQ:   novoX--;
-                      break;
-        case S_DIR:   novoX++;
-                      break;
+        case S_CIMA:
+            novoY--;
+            blocomovivelnovoY = blocomovivelnovoY - 2; // atualiza a posicao do bloco movivel, ja que eh sempre 1 a mais dependendo da direcao p onde o usuario se moveu
+            break;
+        case S_BAIXO:
+            novoY++;
+            blocomovivelnovoY = blocomovivelnovoY + 2;
+            break;
+        case S_ESQ:
+            novoX--;
+            blocomovivelnovoX = blocomovivelnovoX - 2;
+            break;
+        case S_DIR:
+            novoX++;
+            blocomovivelnovoX = blocomovivelnovoX + 2;
+            break;
     }
     gotoxy(novoX, novoY);
     caracter = fasea->elementos[novoY][novoX];
@@ -354,13 +363,14 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogad
             *y = novoY+1;
             break;
         case 'C':
-            fasea->elementos[novoY][novoX] = ' ';
+            fasea->elementos[novoY][novoX] = ' '; // apaga a posicao
             *x = novoX+1;
             *y = novoY+1;
             (*poder)++;
             break;
         case 'L':
-            *x = novoX+1; // sem isso aqui o lolo nao pode se mover para a posicao inicial
+            fasea->elementos[novoY][novoX] = ' '; // apaga a posicao inicial, p n dar conflio com os blocos moviveis
+            *x = novoX+1;
             *y = novoY+1;
             break;
         case 'E':
@@ -374,12 +384,25 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogad
             }
             break;
         case 'T':
-            if (fasea->inimigos == 0) // caso nao haja mais nenhum inimigo, ele pode pegar um bau
+            if (fasea->inimigos == 0) // caso nao haja mais nenhum inimigo, ele pode pegar o bau
             {
+                fasea->elementos[novoY][novoX] = ' ';
                 *x = novoX+1;
                 *y = novoY+1;
             }
             break;
+        case 'B':
+            if (fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == ' ') // caso o espaco que o bloco movivel vai ir seja vazio
+            {
+                fasea->elementos[novoY][novoX] = ' '; // apaga o espaco q tava o bloco movivel
+                *x = novoX+1;
+                *y = novoY+1;
+                fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] = 'B'; // coloca um b na posicao desse novo espaco
+                gotoxy(blocomovivelnovoX+1,blocomovivelnovoY+1); // posiciona e imprime o b (lembrando do +1 por causa da diferenca de posicao da matriz e coordenada)
+                printf("%c", fasea->elementos[blocomovivelnovoY][blocomovivelnovoX]);
+            }
+            break;
+
     }
 }
 
