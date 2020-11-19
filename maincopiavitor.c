@@ -42,16 +42,17 @@ void movimentacao(fase*, save*); // funcao para a movimentacao, dada uma fase e 
 void hidecursor(); // funcao pra esconder o cursor
 void contato_lolo(int, int*, int*, int*, fase*, save*);
  // contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para o x, y, contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
+void mostra_info(save, int); // dado um save passado por cópia, mostra na tela seu nome, fase atual, total de pts e número de vidas.
+void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
 
 // Função principal
 int main()
 {
-    save save1 = {0, 0, 2, 0, "Teste"};
+    save save1 = {0, 0, 2, 3, "Teste"};
     fase fase1;
 
 //    menu();
     fase1 = gera_fase(save1.ultimafase);
-//    imprime_mapa(fase1);
     movimentacao(&fase1, &save1);
 
     return 0;
@@ -277,7 +278,7 @@ fase gera_fase(int numerofase)
     }
 }
 
-void movimentacao(fase *fasea, save *savea)
+void movimentacao(fase *fasea, save *jogador)
 {
     char caracter, lolo = 'L';
     int x, y, poder = 0;
@@ -298,7 +299,8 @@ void movimentacao(fase *fasea, save *savea)
     oldY = y;
     hidecursor();
     gotoxy(13,13); // posiciona antes pra aparecer a info zerada
-    printf("\n%d", poder); // funcao da info
+    printf("\n");
+    mostra_info(*jogador, poder); // funcao da info
     gotoxy(x, y);
     while (caracter != ESC) // o usuario pode se movimentar ate clicar esc (da para por aqui a tecla para voltar para o menu)
     {
@@ -311,21 +313,23 @@ void movimentacao(fase *fasea, save *savea)
         oldY = y;
         switch (caracter)
         {
-            case S_CIMA:  contato_lolo(S_CIMA, &x, &y, &poder, fasea, savea);
+            case S_CIMA:  contato_lolo(S_CIMA, &x, &y, &poder, fasea, jogador);
                           break;
-            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y, &poder, fasea, savea);
+            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y, &poder, fasea, jogador);
                           break;
-            case S_ESQ:   contato_lolo(S_ESQ, &x, &y, &poder, fasea, savea);
+            case S_ESQ:   contato_lolo(S_ESQ, &x, &y, &poder, fasea, jogador);
                           break;
-            case S_DIR:   contato_lolo(S_DIR, &x, &y, &poder, fasea, savea);
+            case S_DIR:   contato_lolo(S_DIR, &x, &y, &poder, fasea, jogador);
                           break;
         }
         gotoxy(13,13);
-        printf("\n%d", poder); // funcao da info
+        printf("\n");
+        mostra_info(*jogador, poder); // funcao da info
     }
+    salvar_arquivo(*jogador);
 }
 
-void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *savea)
+void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogador)
 {
     int novoX = *x-1, novoY = *y-1; // -1 porque eles vao ser posicoes da matriz
     char caracter;
@@ -354,7 +358,7 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *savea
             *x = novoX+1;
             *y = novoY+1;
             (*poder)++;
-                  break;
+            break;
         case 'L':
             *x = novoX+1; // sem isso aqui o lolo nao pode se mover para a posicao inicial
             *y = novoY+1;
@@ -375,5 +379,25 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *savea
                 *x = novoX+1;
                 *y = novoY+1;
             }
+            break;
+    }
+}
+
+// função para mostrar as informações do jogador durante o jogo
+void mostra_info(save jogador, int poder){
+
+    cprintf("Fase: %d\nCoracoes: %d\nPontos: %d\nVidas: %d", jogador.ultimafase, poder, jogador.totalpts, jogador.vidas);
+}
+
+// função para salvar os dados do save a cada fase
+void salvar_arquivo(save jogador){
+    FILE *arq;
+    if(!(arq = fopen("saves.bin", "r+b")))
+        printf("Erro na abertura do arquivo!\n");
+    else{
+        fseek(arq,sizeof(jogador)* jogador.identificador, SEEK_SET);
+        if ((fwrite(&jogador,sizeof(save), 1, arq)) != 1)
+            printf("Erro ao escrever no arquivo\n");
+        fclose(arq);
     }
 }
