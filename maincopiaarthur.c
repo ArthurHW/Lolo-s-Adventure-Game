@@ -27,12 +27,6 @@ typedef struct ponto {
     char y;
 }ponto;
 
-typedef struct jogador_st {
-    int totalpts;
-    int fase;
-    int vidas;
-    char nomejogador[9];
-}jogador;
 
 // protótipos das funções auxiliares:
 int menu(save*); /*função que administra os menus do jogo, ela retorna 1 para a main caso o usuario queira sair do programa
@@ -49,9 +43,8 @@ void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
 void instrucoes(); // imprime na tela as instruções do jogo
 int imprime_saves(FILE*);// dado um arquivo de saves, imprime todos os saves dele na tela formatados; retorna o número de saves do arquivo
-fase gera_fase(FILE*);
-void imprime_mapa(fase);
-
+void mostra_info(save); // dado um save passado por cópia, mostra na tela seu nome, fase atual, total de pts e número de vidas.
+void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
 
 
 // Função principal
@@ -64,7 +57,8 @@ int main()
         return 0;
     }
     else {
-        // colocar aqui a(s) funcao(oes) completa(s) do jogo
+        gotoxy(13,13);
+        mostra_info(jogador);
     }
 
     return 0;
@@ -310,31 +304,24 @@ int imprime_saves(FILE* arq){
     // a função não fecha o arquivo, pois isso é responsabilidade da função que a chamou
 }
 
-fase gera_fase(FILE *arq)
-{
-    int linha, coluna;
-    fase fasea;
+// função para mostrar as informações do jogador durante o jogo
+void mostra_info(save jogador){
 
-    fasea.tamanhox = 13;
-    fasea.tamanhoy = 14;
-    for (linha = 0; linha < 13; linha++){
-        for (coluna = 0; coluna < 14; coluna++){
-            fasea.elementos[linha][coluna] = getc(arq);
-        }
+    cprintf("Nome: %s   Fase: %d   Pontos: %d   Vidas: %d   ",jogador.nomejogador, jogador.ultimafase, jogador.totalpts, jogador.vidas);
+}
+
+// função para salvar os dados do save a cada fase
+void salvar_arquivo(save jogador){
+    FILE *arq;
+    if(!(arq = fopen("saves.bin", "r+b")))
+        printf("Erro na abertura do arquivo!\n");
+    else{
+        fseek(arq,sizeof(jogador)* jogador.identificador, SEEK_SET);
+        if ((fwrite(&jogador,sizeof(save), 1, arq)) != 1)
+            printf("Erro ao escrever no arquivo\n");
+        fclose(arq);
     }
-    return fasea;
 }
 
 
-void imprime_mapa(fase fasea)
-{
-    int linha, coluna;
 
-    for (linha = 0; linha < 13; linha++){
-        for (linha = 0; linha < 14; linha++){
-            //cprintf("%c", fasea.elementos[linha][coluna]);
-        }
-    }
-    cprintf("\n");
-
-}
