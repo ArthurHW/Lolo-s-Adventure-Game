@@ -59,9 +59,11 @@ int main()
 {
     fase fase1;
 //    menu();
-    fase1 = gera_fase(2);
+    fase1 = gera_fase(1);
     imprime_mapa(fase1);
-//    movimentacao(fase1);
+    movimentacao(fase1);
+
+
     return 0;
 }
 
@@ -305,8 +307,8 @@ void movimentacao(fase fasea)
         for (coluna = 0; coluna < fasea.tamanhox; coluna++){
             if (fasea.elementos[linha][coluna] == '@')
             {
-                x = coluna;
-                y = linha;
+                x = coluna+1;
+                y = linha+1;
             }
         }
     }
