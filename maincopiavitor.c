@@ -44,23 +44,31 @@ void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
 void imprime_saves(FILE*);// dado um save imprime ele na tela formatado
 fase gera_fase(int); // dado o numero de uma fase, preenche os elementos daquela fase em uma matriz contendo suas posicoes, e imprime a fase na tela
-void movimentacao(fase*, save*); // funcao para a movimentacao, dada uma fase e um save
+int movimentacao(fase*, save*); // funcao para a movimentacao, dada uma fase e um save, retorna o status do lolo, 1 para se morreu e 0 para se passou de fase
 void hidecursor(); // funcao pra esconder o cursor
 int contato_lolo(int, ponto*, int*, fase*, save*);
-// contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para a posicao do lolo (ponto), contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
+/* contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para a posicao do lolo (ponto), contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
+retorna o status do lolo, 1 se morreu e 0 se passou*/
 void mostra_info(save, int); // dado um save passado por cópia, mostra na tela seu nome, fase atual, total de pts e número de vidas.
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
 
 // Função principal
 int main()
 {
-    save save1 = {0, 0, 1, 3, "Teste"};
+    int status = 0;
+    save jogador = {0, 0, 1, 3, "Teste"};
     fase fase1;
 
 //    menu();
-    fase1 = gera_fase(save1.ultimafase);
-    movimentacao(&fase1, &save1);
-
+    do
+    {
+        fase1 = gera_fase(jogador.ultimafase);
+        status = movimentacao(&fase1, &jogador);
+    }
+    while (status == 1 && jogador.vidas > 0); // executa enquanto o jogador possui vidas e nao passou de fase
+    if (jogador.vidas == 0)
+        printf("Game over");
+//      gameover()
     return 0;
 }
 
@@ -284,7 +292,7 @@ fase gera_fase(int numerofase)
     }
 }
 
-void movimentacao(fase *fasea, save *jogador)
+int movimentacao(fase *fasea, save *jogador)
 {
     int status = 0;
     char caracter, lolo = 'L';
@@ -341,9 +349,12 @@ void movimentacao(fase *fasea, save *jogador)
         clrscr();
         printf("Voce morreu!\n");
         jogador->vidas--;
-        printf("Vidas restantes: %d", jogador->vidas);
+        printf("Vidas restantes: %d\n", jogador->vidas);
+        Sleep(1000);
+        clrscr(); // limpa a tela para imprimir a outra fase
     }
 //    salvar_arquivo(jogador);
+    return status;
 }
 
 int contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *jogador)
@@ -451,3 +462,50 @@ void salvar_arquivo(save jogador){
         fclose(arq);
     }
 }
+
+// essa função apaga o registro do jogador, que perdeu
+void game_over(save jogador){
+    FILE* arqTemp;
+    FILE* arq;
+    save buffer;
+    int id = 0;
+
+    if (!(arqTemp = fopen("savestemp.bin", "wb+")))
+        printf("Erro na abertura do arquivo temporário\n");
+    else{
+        if (!(arq = fopen("saves.bin", "r+b"))){
+            printf("Erro na abertura do arquivo de saves\n");
+        }
+        else {
+            while (!feof(arq)){
+                if((fread(&buffer, sizeof(save), 1, arq)) == 1){
+                    if (buffer.identificador != jogador.identificador){
+                        if ((fwrite(&buffer,sizeof(save), 1,arqTemp)) != 1)
+                            printf("Erro ao escrever no arquivo\n");
+                    }
+                }
+            }
+            fclose(arq);
+            if (!(arq = fopen("saves.bin", "w+b"))){
+                printf("Erro na abertura do arquivo de saves em modo de escrita\n");
+            }
+            else {
+                rewind(arqTemp);
+                while (!feof(arqTemp)){
+                    if((fread(&buffer, sizeof(save), 1, arqTemp)) == 1){
+                            buffer.identificador = id;
+                            id++;
+                        if ((fwrite(&buffer,sizeof(save), 1,arq)) != 1)
+                            printf("Erro ao escrever no arquivo\n");
+                    }
+                }
+            }
+        fclose(arq);
+        fclose(arqTemp);
+        }
+    }
+}
+
+
+
+
