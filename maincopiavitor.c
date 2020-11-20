@@ -28,6 +28,12 @@ typedef struct fase {
     char elementos[14][14]; // 13 por 14 ele nao lia uma parte do mapa ai tive que botar 14x14
 }fase;
 
+typedef struct ponto {
+    char x;
+    char y;
+}ponto;
+
+
 // protótipos das funções auxiliares:
 void menu();
 void imprime_menu(); // funcao para imprimir o menu do jogo
@@ -40,8 +46,8 @@ void imprime_saves(FILE*);// dado um save imprime ele na tela formatado
 fase gera_fase(int); // dado o numero de uma fase, preenche os elementos daquela fase em uma matriz contendo suas posicoes, e imprime a fase na tela
 void movimentacao(fase*, save*); // funcao para a movimentacao, dada uma fase e um save
 void hidecursor(); // funcao pra esconder o cursor
-void contato_lolo(int, int*, int*, int*, fase*, save*);
- // contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para o x, y, contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
+void contato_lolo(int, ponto*, int*, fase*, save*);
+// contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para a posicao do lolo (ponto), contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
 void mostra_info(save, int); // dado um save passado por cópia, mostra na tela seu nome, fase atual, total de pts e número de vidas.
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
 
@@ -281,109 +287,102 @@ fase gera_fase(int numerofase)
 void movimentacao(fase *fasea, save *jogador)
 {
     char caracter, lolo = 'L';
-    int x, y, poder = 0;
-    int linha, coluna;
-    int oldX, oldY;
+    ponto pos_lolo, oldpos_lolo;
+    int poder = 0, linha, coluna;
 
     hidecursor();
     for (linha = 0; linha < fasea->tamanhoy; linha++){
         for (coluna = 0; coluna < fasea->tamanhox; coluna++){
             if (fasea->elementos[linha][coluna] == 'L')
             {
-                x = coluna+1; // +1 porque a matriz comeca em [0][0] e as coordenada em (1,1)
-                y = linha+1;
+                pos_lolo.x = coluna+1; // +1 porque a matriz comeca em [0][0] e as coordenada em (1,1)
+                pos_lolo.y = linha+1;
             }
         }
     }
-    oldX = x;
-    oldY = y;
+    oldpos_lolo.x = pos_lolo.x;
+    oldpos_lolo.y = pos_lolo.y;
     hidecursor();
     gotoxy(13,13); // posiciona antes pra aparecer a info zerada
     printf("\n");
     mostra_info(*jogador, poder); // funcao da info
-    gotoxy(x, y);
+    gotoxy(pos_lolo.x, pos_lolo.y);
     while (caracter != ESC) // o usuario pode se movimentar ate clicar esc (da para por aqui a tecla para voltar para o menu)
     {
-        fasea->elementos[oldY-1][oldX-1] = ' ';
-        gotoxy(oldX, oldY);
+        fasea->elementos[oldpos_lolo.y-1][oldpos_lolo.x-1] = ' ';
+        gotoxy(oldpos_lolo.x,  oldpos_lolo.y);
         printf(" ");
-        fasea->elementos[y-1][x-1] = 'L';
-        gotoxy(x, y);
+        fasea->elementos[pos_lolo.y-1][pos_lolo.x-1] = 'L';
+        gotoxy(pos_lolo.x, pos_lolo.y);
         printf("%c", lolo);
         caracter = getch();
-        oldX = x;
-        oldY = y;
+        oldpos_lolo.x = pos_lolo.x;
+        oldpos_lolo.y = pos_lolo.y;
         switch (caracter)
         {
-            case S_CIMA:  contato_lolo(S_CIMA, &x, &y, &poder, fasea, jogador);
+            case S_CIMA:  contato_lolo(S_CIMA, &pos_lolo, &poder, fasea, jogador);
                           break;
-            case S_BAIXO: contato_lolo(S_BAIXO, &x, &y, &poder, fasea, jogador);
+            case S_BAIXO: contato_lolo(S_BAIXO, &pos_lolo, &poder, fasea, jogador);
                           break;
-            case S_ESQ:   contato_lolo(S_ESQ, &x, &y, &poder, fasea, jogador);
+            case S_ESQ:   contato_lolo(S_ESQ, &pos_lolo, &poder, fasea, jogador);
                           break;
-            case S_DIR:   contato_lolo(S_DIR, &x, &y, &poder, fasea, jogador);
+            case S_DIR:   contato_lolo(S_DIR, &pos_lolo, &poder, fasea, jogador);
                           break;
         }
         gotoxy(13,13);
         printf("\n");
         mostra_info(*jogador, poder); // funcao da info
-
-
     }
-//    salvar_arquivo(*jogador);
 }
 
-void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogador)
+void contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *jogador)
 {
-    int novoX = *x-1, novoY = *y-1; // -1 porque eles vao ser posicoes da matriz
-    int blocomovivelnovoX = *x-1, blocomovivelnovoY = *y-1;
+    ponto newpos_lolo, newpos_B;
     char caracter;
 
+    newpos_lolo.x = pos_lolo->x-1; // -1 porque eles vao ser posicoes da matriz
+    newpos_lolo.y = pos_lolo->y-1;
+    newpos_B.x = pos_lolo->x-1;
+    newpos_B.y = pos_lolo->y-1;
     switch(seta) // atualiza o x ou o y dependendo da tecla apertada pelo usuario
     {
         case S_CIMA:
-            novoY--;
-            blocomovivelnovoY = blocomovivelnovoY - 2; // atualiza a posicao do bloco movivel, ja que eh sempre 1 a mais dependendo da direcao p onde o usuario se moveu
+            newpos_lolo.y--;
+            newpos_B.y = newpos_B.y - 2; // atualiza a posicao do bloco movivel, ja que eh sempre 1 a mais dependendo da direcao p onde o usuario se moveu
             break;
         case S_BAIXO:
-            novoY++;
-            blocomovivelnovoY = blocomovivelnovoY + 2;
+            newpos_lolo.y++;
+            newpos_B.y = newpos_B.y + 2;
             break;
         case S_ESQ:
-            novoX--;
-            blocomovivelnovoX = blocomovivelnovoX - 2;
+            newpos_lolo.x--;
+            newpos_B.x = newpos_B.x - 2;
             break;
         case S_DIR:
-            novoX++;
-            blocomovivelnovoX = blocomovivelnovoX + 2;
+            newpos_lolo.x++;
+            newpos_B.x = newpos_B.x + 2;
             break;
     }
-    gotoxy(novoX, novoY);
-    caracter = fasea->elementos[novoY][novoX];
-
+    gotoxy(newpos_lolo.x, newpos_lolo.y);
+    caracter = fasea->elementos[newpos_lolo.y][newpos_lolo.x];
     switch (caracter)
     {
         case ' ': // espaco vazio
-            *x = novoX+1; // e volta para o +1, ja que agora eles sao coordenadas
-            *y = novoY+1;
+            pos_lolo->x = newpos_lolo.x+1; // e volta para o +1, ja que agora eles sao coordenadas
+            pos_lolo->y = newpos_lolo.y+1;
             break;
         case 'C': // coracao
-            fasea->elementos[novoY][novoX] = ' '; // apaga a posicao
-            *x = novoX+1;
-            *y = novoY+1;
+            fasea->elementos[newpos_lolo.y][newpos_lolo.x] = ' '; // apaga a posicao
+            pos_lolo->x = newpos_lolo.x+1;
+            pos_lolo->y = newpos_lolo.y+1;
             (*poder)++;
             break;
-//        case 'L': // posicao inicial do lolo
-//            fasea->elementos[novoY][novoX] = ' ';
-//            *x = novoX+1;
-//            *y = novoY+1;
-//            break;
         case 'E': // inimigo
             if (*poder != 0) // se o lolo tiver poder
             {
-                fasea->elementos[novoY][novoX] = ' ';
-                *x = novoX+1;
-                *y = novoY+1;
+                fasea->elementos[newpos_lolo.y][newpos_lolo.x] = ' ';
+                pos_lolo->x = newpos_lolo.x+1;
+                pos_lolo->y = newpos_lolo.y+1;
                 (*poder)--; // diminui 1 do poder e dos inimigos
                 fasea->inimigos--;
             }
@@ -392,20 +391,20 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogad
             if (fasea->inimigos == 0) // caso nao haja mais nenhum inimigo, ele pode pegar o bau
             {
 
-                fasea->elementos[novoY][novoX] = ' ';
-                *x = novoX+1;
-                *y = novoY+1;
+                fasea->elementos[newpos_lolo.y][newpos_lolo.x] = ' ';
+                pos_lolo->x = newpos_lolo.x+1;
+                pos_lolo->y = newpos_lolo.y+1;
             }
             break;
         case 'B': // bloco movivel
-            if (fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == ' ') //  || fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == ' ', caso o espaco que o bloco movivel vai ir seja vazio ou seja L
+            if (fasea->elementos[newpos_B.y][newpos_B.x] == ' ') //  || fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == ' ', caso o espaco que o bloco movivel vai ir seja vazio
             {
-                fasea->elementos[novoY][novoX] = ' '; // apaga o espaco q tava o bloco movivel
-                *x = novoX+1;
-                *y = novoY+1;
-                fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] = 'B'; // coloca um b na posicao desse novo espaco
-                gotoxy(blocomovivelnovoX+1,blocomovivelnovoY+1); // posiciona e imprime o b (lembrando do +1 por causa da diferenca de posicao da matriz e coordenada)
-                printf("%c", fasea->elementos[blocomovivelnovoY][blocomovivelnovoX]);
+                fasea->elementos[newpos_lolo.y][newpos_lolo.x] = ' '; // apaga o espaco q tava o bloco movivel
+                pos_lolo->x = newpos_lolo.x+1;
+                pos_lolo->y = newpos_lolo.y+1;
+                fasea->elementos[newpos_B.y][newpos_B.x] = 'B'; // coloca um b na posicao desse novo espaco
+                gotoxy(newpos_B.x+1,newpos_B.y+1); // posiciona e imprime o b (lembrando do +1 por causa da diferenca de posicao da matriz e coordenada)
+                printf("%c", fasea->elementos[newpos_B.y][newpos_B.x]);
             }
             break;
 
