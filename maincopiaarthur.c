@@ -58,7 +58,7 @@ void contato_lolo(int, int*, int*, int*, fase*, save*);
 void movimentacao(fase*, save*);
 void hidecursor();
 fase gera_fase(int);
-
+void game_over();
 
 
 // Função principal
@@ -67,9 +67,10 @@ int main()
     save save1 = {0, 0, 1, 3, "Teste"};
     fase fase1;
     srand(time(NULL));
-//    menu();
-    fase1 = gera_fase(save1.ultimafase);
-    movimentacao(&fase1, &save1);
+    menu(&save1);
+    //game_over(save1);
+    //fase1 = gera_fase(save1.ultimafase);
+    //movimentacao(&fase1, &save1);
 
     return 0;
 }
@@ -236,6 +237,7 @@ int novoJogo(save* novo_jogador)
         }
     }
     // fechar o arquivo e não voltar ao menu, pois o retorno 1 encerra a função menu também
+    clrscr();
     fclose(arq);
     return 0;
 
@@ -497,6 +499,7 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogad
                 *y = novoY+1;
                 (*poder)--; // diminui 1 do poder e dos inimigos
                 fasea->inimigos--;
+                jogador->totalpts++;
             }
             break;
         case 'T':
@@ -542,7 +545,7 @@ void movimenta_inimigo(ponto* inimigo, fase* fasea){
     }
     caracter = fasea->elementos[x][y];
     if (caracter == ' ' || caracter == 'L'){
-        fasea->elementos[inimigo->x][inimigo->y] = ' ';
+        fasea->elementos[inimigo->x-1][inimigo->y-1] = ' ';
         fasea->elementos[x][y] = 'E';
         x = x + 1; // atualizar para posições do terminal
         y = y + 1;
@@ -552,6 +555,49 @@ void movimenta_inimigo(ponto* inimigo, fase* fasea){
         inimigo->y = y;
         gotoxy(x, y);
         cprintf("E");
+    }
+}
+
+// essa função apaga o registro do jogador, que perdeu
+void game_over(save jogador){
+    FILE* arqTemp;
+    FILE* arq;
+    save buffer;
+    int id = 0;
+
+    if (!(arqTemp = fopen("savestemp.bin", "wb+")))
+        printf("Erro na abertura do arquivo temporário\n");
+    else{
+        if (!(arq = fopen("saves.bin", "r+b"))){
+            printf("Erro na abertura do arquivo de saves\n");
+        }
+        else {
+            while (!feof(arq)){
+                if((fread(&buffer, sizeof(save), 1, arq)) == 1){
+                    if (buffer.identificador != jogador.identificador){
+                        if ((fwrite(&buffer,sizeof(save), 1,arqTemp)) != 1)
+                            printf("Erro ao escrever no arquivo\n");
+                    }
+                }
+            }
+            fclose(arq);
+            if (!(arq = fopen("saves.bin", "w+b"))){
+                printf("Erro na abertura do arquivo de saves em modo de escrita\n");
+            }
+            else {
+                rewind(arqTemp);
+                while (!feof(arqTemp)){
+                    if((fread(&buffer, sizeof(save), 1, arqTemp)) == 1){
+                            buffer.identificador = id;
+                            id++;
+                        if ((fwrite(&buffer,sizeof(save), 1,arq)) != 1)
+                            printf("Erro ao escrever no arquivo\n");
+                    }
+                }
+            }
+        fclose(arq);
+        fclose(arqTemp);
+        }
     }
 }
 
