@@ -46,7 +46,7 @@ void imprime_saves(FILE*);// dado um save imprime ele na tela formatado
 fase gera_fase(int); // dado o numero de uma fase, preenche os elementos daquela fase em uma matriz contendo suas posicoes, e imprime a fase na tela
 void movimentacao(fase*, save*); // funcao para a movimentacao, dada uma fase e um save
 void hidecursor(); // funcao pra esconder o cursor
-void contato_lolo(int, ponto*, int*, fase*, save*);
+int contato_lolo(int, ponto*, int*, fase*, save*);
 // contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para a posicao do lolo (ponto), contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
 void mostra_info(save, int); // dado um save passado por cópia, mostra na tela seu nome, fase atual, total de pts e número de vidas.
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
@@ -286,6 +286,7 @@ fase gera_fase(int numerofase)
 
 void movimentacao(fase *fasea, save *jogador)
 {
+    int status = 0;
     char caracter, lolo = 'L';
     ponto pos_lolo, oldpos_lolo;
     int poder = 0, linha, coluna;
@@ -307,7 +308,7 @@ void movimentacao(fase *fasea, save *jogador)
     printf("\n");
     mostra_info(*jogador, poder); // funcao da info
     gotoxy(pos_lolo.x, pos_lolo.y);
-    while (caracter != ESC) // o usuario pode se movimentar ate clicar esc (da para por aqui a tecla para voltar para o menu)
+    while (caracter != ESC && status != 1) // o usuario pode se movimentar ate clicar esc (da para por aqui a tecla para voltar para o menu)
     {
         fasea->elementos[oldpos_lolo.y-1][oldpos_lolo.x-1] = ' ';
         gotoxy(oldpos_lolo.x,  oldpos_lolo.y);
@@ -320,23 +321,34 @@ void movimentacao(fase *fasea, save *jogador)
         oldpos_lolo.y = pos_lolo.y;
         switch (caracter)
         {
-            case S_CIMA:  contato_lolo(S_CIMA, &pos_lolo, &poder, fasea, jogador);
+            case S_CIMA:  status = contato_lolo(S_CIMA, &pos_lolo, &poder, fasea, jogador);
                           break;
-            case S_BAIXO: contato_lolo(S_BAIXO, &pos_lolo, &poder, fasea, jogador);
+            case S_BAIXO: status = contato_lolo(S_BAIXO, &pos_lolo, &poder, fasea, jogador);
                           break;
-            case S_ESQ:   contato_lolo(S_ESQ, &pos_lolo, &poder, fasea, jogador);
+            case S_ESQ:   status = contato_lolo(S_ESQ, &pos_lolo, &poder, fasea, jogador);
                           break;
-            case S_DIR:   contato_lolo(S_DIR, &pos_lolo, &poder, fasea, jogador);
+            case S_DIR:   status = contato_lolo(S_DIR, &pos_lolo, &poder, fasea, jogador);
                           break;
         }
         gotoxy(13,13);
         printf("\n");
         mostra_info(*jogador, poder); // funcao da info
     }
+
+    if (status == 1)
+    {
+        Sleep(500);
+        clrscr();
+        printf("Voce morreu!\n");
+        jogador->vidas--;
+        printf("Vidas restantes: %d", jogador->vidas);
+    }
+//    salvar_arquivo(jogador);
 }
 
-void contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *jogador)
+int contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *jogador)
 {
+    int status = 0;
     ponto newpos_lolo, newpos_B;
     char caracter;
 
@@ -385,12 +397,18 @@ void contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *joga
                 pos_lolo->y = newpos_lolo.y+1;
                 (*poder)--; // diminui 1 do poder e dos inimigos
                 fasea->inimigos--;
+                jogador->totalpts++;
+            }
+            else
+            {
+                gotoxy(pos_lolo->x, pos_lolo->y);
+                printf(" ");
+                status = 1; // senao, ele morre
             }
             break;
         case 'T': // bau
             if (fasea->inimigos == 0) // caso nao haja mais nenhum inimigo, ele pode pegar o bau
             {
-
                 fasea->elementos[newpos_lolo.y][newpos_lolo.x] = ' ';
                 pos_lolo->x = newpos_lolo.x+1;
                 pos_lolo->y = newpos_lolo.y+1;
@@ -407,8 +425,12 @@ void contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *joga
                 printf("%c", fasea->elementos[newpos_B.y][newpos_B.x]);
             }
             break;
-
+        case 'A': // caso o bloco for agua, ele morre
+            gotoxy(pos_lolo->x, pos_lolo->y); // apaga a posicao do lolo
+            printf(" ");
+            status = 1;
     }
+    return status;
 }
 
 // função para mostrar as informações do jogador durante o jogo
