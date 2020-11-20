@@ -58,7 +58,7 @@ void contato_lolo(int, int*, int*, int*, fase*, save*);
 void movimentacao(fase*, save*);
 void hidecursor();
 fase gera_fase(int);
-void game_over();
+void game_over(); // dado o save de um jogador, apaga esse save do arquivo de saves e printa na tela game over
 
 
 // Função principal
@@ -69,8 +69,8 @@ int main()
     srand(time(NULL));
     menu(&save1);
     //game_over(save1);
-    //fase1 = gera_fase(save1.ultimafase);
-    //movimentacao(&fase1, &save1);
+    fase1 = gera_fase(save1.ultimafase);
+    movimentacao(&fase1, &save1);
 
     return 0;
 }
@@ -101,6 +101,7 @@ int menu(save* jogador){
                             break;
             }
         } while (opcao != 'S'&& volta); // enquanto o usuario nao queia sair do programa, ou não tenha entrado em um "save"
+    clrscr();
     return 0;
 }
 
@@ -127,8 +128,8 @@ void instrucoes()
     clrscr();
     printf("======================================================================================================================\n                                                  INSTRUCOES ");
     printf("\n======================================================================================================================\n\n");
-    printf("  Controles:\nUtilize as setas do teclado para mover o Lolo\n\n  Cenario:\n@ - Lolo -> Personagem controlado pelo jogador\nP - Pedra -> Lolo nao pode se mover para esta posicao\n");
-    printf("A - Agua -> Cuidado Lolo nao sabe nadar\nC - Coracao -> Ao pegar um coracao, Lolo pode tocar em um inimigo\nB - Bloco movivel -> Lolo pode movimentar esse bloco, mas cuidado para nao ficar preso!\n");
+    printf("  Controles:\nUtilize as setas do teclado para mover o Lolo\n\n  Cenario:\nL - Lolo -> Personagem controlado pelo jogador\nP - Pedra -> Lolo nao pode se mover para esta posicao\n");
+    printf("A - Agua -> Cuidado Lolo nao sabe nadar\nC - Coracao -> Ao pegar um coracao, Lolo pode tocar em um inimigo para elimina-lo\nB - Bloco movivel -> Lolo pode movimentar esse bloco, mas cuidado para nao ficar preso!\n");
     printf("E - Inimigo -> Cuidado com eles, nao se esqueca dos coracoes\nT - Bau -> Apos derrotar todos os inimigos, corra ate ele para terminar a fase\n\n");
     printf("  Objetivo:\nO seu objetivo eh encontrar os coracoes, derrotar todos os inimigos e se dirigir ao bau para ir para a proxima fase\n\n");
     printf("  Pontuacao e vidas:\nLolo comeca o jogo com 3 vidas e 0 pontos, para cada inimigo eliminado Lolo ganha um ponto, a cada 10 pontos\nconsecutivos Lolo ganha uma vida extra");
@@ -384,8 +385,15 @@ fase gera_fase(int numerofase)
     }
 }
 
+//Limpa o buffer do teclado
+void flush_in(){
+    int ch;
+    while( (ch = fgetc(stdin)) != EOF && ch != '\n' ){}
+}
+
 void movimentacao(fase *fasea, save *jogador)
 {
+
     char caracter, lolo = 'L';
     ponto inimigos[fasea->inimigos];
     int contador = 0;
@@ -440,6 +448,7 @@ void movimentacao(fase *fasea, save *jogador)
         for (contador = 0; contador < fasea->inimigos; contador++){
             movimenta_inimigo(&inimigos[contador], fasea);
         }
+
         gotoxy(13,13);
         printf("\n");
         mostra_info(*jogador, poder); // funcao da info
@@ -526,36 +535,45 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogad
 }
 
 
+
+
 void movimenta_inimigo(ponto* inimigo, fase* fasea){
-    int x, y;
     int direcao;
+    ponto oldpos_inimigo, pos_inimigo;
+    char  inimigo_char = 'E';
     char caracter;
-    x = inimigo->x - 1; // atualizar para posições da matriz
-    y = inimigo->y - 1;
+
+
+    pos_inimigo.x = inimigo->x-1;
+    pos_inimigo.y = inimigo->y-1;
+    oldpos_inimigo.x = inimigo->x-1;
+    oldpos_inimigo.y = inimigo->y-1;
     direcao = (rand() % 4);
-    switch(direcao){
-        case 1: x++;
-            break;
-        case 2: x--;
-            break;
-        case 3: y++;
-            break;
-        case 4: y--;
-            break;
+    switch (direcao)
+    {
+        case 0:  pos_inimigo.x++;
+                        break;
+        case 1:  pos_inimigo.x--;
+                        break;
+        case 2:  pos_inimigo.y++;
+                        break;
+        case 3:  pos_inimigo.y--;
+                        break;
     }
-    caracter = fasea->elementos[x][y];
-    if (caracter == ' ' || caracter == 'L'){
-        fasea->elementos[inimigo->x-1][inimigo->y-1] = ' ';
-        fasea->elementos[x][y] = 'E';
-        x = x + 1; // atualizar para posições do terminal
-        y = y + 1;
-        gotoxy(inimigo->x, inimigo->y);
+    caracter = fasea->elementos[pos_inimigo.y][pos_inimigo.x];
+
+    if (caracter == ' '){
+        inimigo->x = pos_inimigo.x + 1;
+        inimigo->y = pos_inimigo.y + 1;
+        fasea->elementos[oldpos_inimigo.y][oldpos_inimigo.x] = ' ';
+        fasea->elementos[pos_inimigo.y][pos_inimigo.x] = 'E';
+        gotoxy(oldpos_inimigo.x+1, oldpos_inimigo.y+1);
         cprintf(" ");
-        inimigo->x = x;
-        inimigo->y = y;
-        gotoxy(x, y);
+        gotoxy(inimigo->x, inimigo->y);
         cprintf("E");
     }
+
+
 }
 
 // essa função apaga o registro do jogador, que perdeu
@@ -564,13 +582,16 @@ void game_over(save jogador){
     FILE* arq;
     save buffer;
     int id = 0;
-
+    // abertura do arquivo temporário e do arquivo permanente
     if (!(arqTemp = fopen("savestemp.bin", "wb+")))
         printf("Erro na abertura do arquivo temporário\n");
     else{
         if (!(arq = fopen("saves.bin", "r+b"))){
             printf("Erro na abertura do arquivo de saves\n");
         }
+        // enquanto não chegar no fim do arquivo permanente, lê ele e grava os jogadores que não tem o id do jogador
+        // dado no arquivo temporário, assim o arquivo temporário tem uma cópia do arquivo permanente, com os dados do jogador
+        // dado "excluídos"
         else {
             while (!feof(arq)){
                 if((fread(&buffer, sizeof(save), 1, arq)) == 1){
@@ -580,10 +601,12 @@ void game_over(save jogador){
                     }
                 }
             }
+            // fecha o arquivo tempoário e abre ele denovo, em modo de escrita, deletando seus dados
             fclose(arq);
             if (!(arq = fopen("saves.bin", "w+b"))){
                 printf("Erro na abertura do arquivo de saves em modo de escrita\n");
             }
+            // Passa os saves do arquivo temporário para o arquivo permanente, porém com o id atualizado
             else {
                 rewind(arqTemp);
                 while (!feof(arqTemp)){
@@ -595,11 +618,20 @@ void game_over(save jogador){
                     }
                 }
             }
+        // printa na tela o game over
+        clrscr();
+        printf("=======================================================================================================\n");
+        printf("                                         GAME OVER\n");
+        printf("=======================================================================================================\n");
+        system("pause");
+        // fecha os arquivos
         fclose(arq);
         fclose(arqTemp);
         }
     }
 }
+
+
 
 
 
