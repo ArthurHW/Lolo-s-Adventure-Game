@@ -64,9 +64,9 @@ fase gera_fase(int);
 // Função principal
 int main()
 {
-    save save1 = {0, 0, 2, 3, "Teste"};
+    save save1 = {0, 0, 1, 3, "Teste"};
     fase fase1;
-
+    srand(time(NULL));
 //    menu();
     fase1 = gera_fase(save1.ultimafase);
     movimentacao(&fase1, &save1);
@@ -522,49 +522,38 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogad
     }
 }
 
+
 void movimenta_inimigo(ponto* inimigo, fase* fasea){
-    int novoX, novoY;
+    int x, y;
     int direcao;
     char caracter;
-    srand(time(NULL));
-    do{
-        novoX = inimigo->x - 1;
-        novoY = inimigo->y - 1;
-        fasea->elementos[novoX][novoY] = ' ';
-        direcao = (rand() % 4);
-        switch(direcao) // atualiza o x ou o y dependendo do resultado da função rand()
-        {
-            case 0:  novoY--;
-                        break;
-            case 1:  novoY++;
-                        break;
-            case 2:   novoX--;
-                         break;
-            case 3:   novoX++;
-                        break;
-        }
-    caracter = fasea->elementos[novoX][novoY];
-    } while (caracter != ' '  && caracter != 'L');
-    fasea->elementos[novoX][novoY] = 'E';
-    gotoxy(inimigo->x, inimigo->y);
-    cprintf(" ");
-    switch (caracter)
-    {
-        case ' ':
-            inimigo->x = novoX+1; // e volta para o +1, ja que agora eles sao coordenadas
-            inimigo->y = novoY+1;
+    x = inimigo->x - 1; // atualizar para posições da matriz
+    y = inimigo->y - 1;
+    direcao = (rand() % 4);
+    switch(direcao){
+        case 1: x++;
             break;
-        case 'L':
-            inimigo->x = novoX+1;
-            inimigo->y = novoY+1;
-            // reset()
+        case 2: x--;
             break;
-        default: break;
+        case 3: y++;
+            break;
+        case 4: y--;
+            break;
     }
-    gotoxy(inimigo->x, inimigo->y);
-    cprintf("E");
+    caracter = fasea->elementos[x][y];
+    if (caracter == ' ' || caracter == 'L'){
+        fasea->elementos[inimigo->x][inimigo->y] = ' ';
+        fasea->elementos[x][y] = 'E';
+        x = x + 1; // atualizar para posições do terminal
+        y = y + 1;
+        gotoxy(inimigo->x, inimigo->y);
+        cprintf(" ");
+        inimigo->x = x;
+        inimigo->y = y;
+        gotoxy(x, y);
+        cprintf("E");
+    }
 }
-
 
 
 
