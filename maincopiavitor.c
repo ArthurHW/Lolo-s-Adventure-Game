@@ -304,8 +304,10 @@ void movimentacao(fase *fasea, save *jogador)
     gotoxy(x, y);
     while (caracter != ESC) // o usuario pode se movimentar ate clicar esc (da para por aqui a tecla para voltar para o menu)
     {
+        fasea->elementos[oldY-1][oldX-1] = ' ';
         gotoxy(oldX, oldY);
         printf(" ");
+        fasea->elementos[y-1][x-1] = 'L';
         gotoxy(x, y);
         printf("%c", lolo);
         caracter = getch();
@@ -325,6 +327,8 @@ void movimentacao(fase *fasea, save *jogador)
         gotoxy(13,13);
         printf("\n");
         mostra_info(*jogador, poder); // funcao da info
+
+
     }
 //    salvar_arquivo(*jogador);
 }
@@ -369,11 +373,11 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogad
             *y = novoY+1;
             (*poder)++;
             break;
-        case 'L': // posicao inicial do lolo
-            fasea->elementos[novoY][novoX] = ' ';
-            *x = novoX+1;
-            *y = novoY+1;
-            break;
+//        case 'L': // posicao inicial do lolo
+//            fasea->elementos[novoY][novoX] = ' ';
+//            *x = novoX+1;
+//            *y = novoY+1;
+//            break;
         case 'E': // inimigo
             if (*poder != 0) // se o lolo tiver poder
             {
@@ -394,7 +398,7 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogad
             }
             break;
         case 'B': // bloco movivel
-            if (fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == ' ' || fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == 'L') // caso o espaco que o bloco movivel vai ir seja vazio ou seja L
+            if (fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == ' ') //  || fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == ' ', caso o espaco que o bloco movivel vai ir seja vazio ou seja L
             {
                 fasea->elementos[novoY][novoX] = ' '; // apaga o espaco q tava o bloco movivel
                 *x = novoX+1;
