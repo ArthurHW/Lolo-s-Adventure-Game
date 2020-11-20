@@ -326,7 +326,7 @@ void movimentacao(fase *fasea, save *jogador)
         printf("\n");
         mostra_info(*jogador, poder); // funcao da info
     }
-    salvar_arquivo(*jogador);
+//    salvar_arquivo(*jogador);
 }
 
 void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogador)
@@ -356,24 +356,25 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogad
     }
     gotoxy(novoX, novoY);
     caracter = fasea->elementos[novoY][novoX];
+
     switch (caracter)
     {
-        case ' ':
+        case ' ': // espaco vazio
             *x = novoX+1; // e volta para o +1, ja que agora eles sao coordenadas
             *y = novoY+1;
             break;
-        case 'C':
+        case 'C': // coracao
             fasea->elementos[novoY][novoX] = ' '; // apaga a posicao
             *x = novoX+1;
             *y = novoY+1;
             (*poder)++;
             break;
-        case 'L':
-            fasea->elementos[novoY][novoX] = ' '; // apaga a posicao inicial, p n dar conflio com os blocos moviveis
+        case 'L': // posicao inicial do lolo
+            fasea->elementos[novoY][novoX] = ' ';
             *x = novoX+1;
             *y = novoY+1;
             break;
-        case 'E':
+        case 'E': // inimigo
             if (*poder != 0) // se o lolo tiver poder
             {
                 fasea->elementos[novoY][novoX] = ' ';
@@ -383,16 +384,17 @@ void contato_lolo(int seta, int *x, int *y, int *poder, fase *fasea, save *jogad
                 fasea->inimigos--;
             }
             break;
-        case 'T':
+        case 'T': // bau
             if (fasea->inimigos == 0) // caso nao haja mais nenhum inimigo, ele pode pegar o bau
             {
+
                 fasea->elementos[novoY][novoX] = ' ';
                 *x = novoX+1;
                 *y = novoY+1;
             }
             break;
-        case 'B':
-            if (fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == ' ') // caso o espaco que o bloco movivel vai ir seja vazio
+        case 'B': // bloco movivel
+            if (fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == ' ' || fasea->elementos[blocomovivelnovoY][blocomovivelnovoX] == 'L') // caso o espaco que o bloco movivel vai ir seja vazio ou seja L
             {
                 fasea->elementos[novoY][novoX] = ' '; // apaga o espaco q tava o bloco movivel
                 *x = novoX+1;
