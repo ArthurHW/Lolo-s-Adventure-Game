@@ -1,13 +1,13 @@
 PPPPPPPPPPPPP
-P      P   CP
-P  P   P    P
-P     PPBPPPP
-P  E        P
-P  P     B EP
-PPP P T     P
-PC  P    PPPP
-PPPB   E    P
-PAA     PPPBP
-PP      PPC P
-P   L   PP  P
+PPPPP   B  PP
+PPC B   PCPPP
+PPP P L PPPPP
+P        PPPP
+P           P
+P  E  T  E  P
+P           P
+PPBP E E    P
+PP PP   PPBPP
+P   B   PC PP
+PPCPP   PP PP
 PPPPPPPPPPPPP
