@@ -447,20 +447,7 @@ int movimentacao(fase *fasea, save *jogador)
         caracter = getch();
         oldpos_lolo.x = pos_lolo.x;
         oldpos_lolo.y = pos_lolo.y;
-        switch (caracter)
-        {
-            case S_CIMA:  status = contato_lolo(S_CIMA, &pos_lolo, &poder, fasea, jogador);
-                          break;
-            case S_BAIXO: status = contato_lolo(S_BAIXO, &pos_lolo, &poder, fasea, jogador);
-                          break;
-            case S_ESQ:   status = contato_lolo(S_ESQ, &pos_lolo, &poder, fasea, jogador);
-                          break;
-            case S_DIR:   status = contato_lolo(S_DIR, &pos_lolo, &poder, fasea, jogador);
-                          break;
-        }
-        fasea->elementos[oldpos_lolo.y-1][oldpos_lolo.x-1] = ' ';
-        fasea->elementos[pos_lolo.y-1][pos_lolo.x-1] = 'L';
-        if(caracter != -32) // por algum motivo a função getch sempre retorna -32 quando o usuario digita uma seta e depois a seta
+        if(caracter != -32) // por algum motivo a função getch sempre retorna -32 quando o usuario digita uma seta e depois retorna a seta
         {
 
                 for (contador = 0; contador < numInimigos; contador++)
@@ -473,6 +460,22 @@ int movimentacao(fase *fasea, save *jogador)
             }
 
         }
+        if (status != 1){
+        switch (caracter)
+            {
+                case S_CIMA:  status = contato_lolo(S_CIMA, &pos_lolo, &poder, fasea, jogador);
+                              break;
+                case S_BAIXO: status = contato_lolo(S_BAIXO, &pos_lolo, &poder, fasea, jogador);
+                              break;
+                case S_ESQ:   status = contato_lolo(S_ESQ, &pos_lolo, &poder, fasea, jogador);
+                              break;
+                case S_DIR:   status = contato_lolo(S_DIR, &pos_lolo, &poder, fasea, jogador);
+                              break;
+            }
+        }
+        fasea->elementos[oldpos_lolo.y-1][oldpos_lolo.x-1] = ' ';
+        fasea->elementos[pos_lolo.y-1][pos_lolo.x-1] = 'L';
+
         gotoxy(13,13);
         printf("\n");
         mostra_info(*jogador, poder); // funcao da info
@@ -584,12 +587,8 @@ int movimenta_inimigo(ponto* inimigo, fase* fasea, int* status, int* poder){
     char  inimigo_char = 'E';
     char caracter;
 
-    if (fasea->elementos[inimigo->y-1][inimigo->x-1] == 'L')
-       {
-        inimigo->vivo = 0;
-        statusmove = 1;
-       }
-    else if (inimigo->vivo){
+
+    if (inimigo->vivo){
         pos_inimigo.x = inimigo->x-1;
         pos_inimigo.y = inimigo->y-1;
         oldpos_inimigo.x = inimigo->x-1;
@@ -607,7 +606,6 @@ int movimenta_inimigo(ponto* inimigo, fase* fasea, int* status, int* poder){
                             break;
         }
         caracter = fasea->elementos[pos_inimigo.y][pos_inimigo.x];
-
         if (caracter == ' '){
             inimigo->x = pos_inimigo.x + 1;
             inimigo->y = pos_inimigo.y + 1;
@@ -625,8 +623,11 @@ int movimenta_inimigo(ponto* inimigo, fase* fasea, int* status, int* poder){
                 statusmove = 1;
             }
             else {
-                poder--;
+                *poder--;
                 inimigo->vivo = 0;
+                gotoxy(oldpos_inimigo.x+1,oldpos_inimigo.y+1);
+                cprintf(" ");
+                statusmove = 1;
             }
 
         }
