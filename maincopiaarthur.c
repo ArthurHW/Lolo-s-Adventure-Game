@@ -15,6 +15,7 @@
 #define ESC 27
 
 // definição das structs:
+// representa os dados de um registro de um jogador
 typedef struct gravacao {
     int identificador;
     int totalpts;
@@ -23,13 +24,16 @@ typedef struct gravacao {
     char nomejogador[9];
 }save;
 
+// representa uma fase, com seu tamanho, elementos e numero de inimigos
 typedef struct fase {
     int tamanhox;
     int tamanhoy;
     int inimigos;
-    char elementos[14][14];
+    char elementos[14][14]; // era pra ser 13 por 14 por causa do \n, mas deu um erro ai a gente teve que alterar pra 14 por 14
+                            // o erro ja foi corrigido, mas deixamos assim pq n faz dferença no resto do programa
 }fase;
 
+// representa um ponto, que pode ser o Lolo ou um inimigo
 typedef struct ponto {
     char x;
     char y;
@@ -55,38 +59,33 @@ int imprime_saves(FILE*);// dado um arquivo de saves, imprime todos os saves del
 void mostra_info(save, int); // dado um save passado por cópia, mostra na tela seu nome, fase atual, total de pts e número de vidas.
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
 int movimenta_inimigo(ponto*, fase*, int*, int*);
-int contato_lolo(int, ponto*, int*, fase*, save*);
-int movimentacao(fase*, save*);
-void hidecursor();
-fase gera_fase(int);
-void game_over(); // dado o save de um jogador, apaga esse save do arquivo de saves e printa na tela game over
-
+int contato_lolo(int, ponto*, int*, fase*, save*);/* contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para a posicao do lolo (ponto), contagem de
+coracoes (poder) do lolo, uma fase e um save (para atualizar os dados) retorna o status do lolo, 1 se morreu e 0 se passou, além de tratar a ação do jogador*/
+int movimentacao(fase*, save*); // funcao para a movimentacao, dada uma fase e um save, retorna o status do lolo, 1 para se morreu e 0 para se passou de fase
+void hidecursor(); // função para esconder o cursor
+fase gera_fase(int); // dado o numero de uma fase, preenche os elementos daquela fase em uma matriz contendo suas posicoes, e imprime a fase na tela
+void game_over(save); // dado o save de um jogador, apaga esse save do arquivo de saves e printa na tela game over
+void morreu(save*); // informa ao jogador que ele morreu e atualiza os dados necessarios
+void passou_de_fase(save*); // informa ao jogador que ele passou de fase, atualiza os dados necessarios e se ele está n ultima fase, informa que ele zerou o jogo
 
 // Função principal
 int main()
 {
-    /*save save1 = {0, 0, 1, 3, "Teste"};
+    int sair, status;
+    save jogador;
     fase fase1;
-    srand(time(NULL));
-    menu(&save1);
-    //game_over(save1);
-    fase1 = gera_fase(save1.ultimafase);
-    movimentacao(&fase1, &save1);
+    do {
+        sair = menu(&jogador);
+        do
+        {
+            fase1 = gera_fase(jogador.ultimafase);
+            status = movimentacao(&fase1, &jogador);
+        }
+        while (jogador.vidas > 0); // executa enquanto o jogador possui vidas e nao passou de fase
+        if (jogador.vidas == 0)
+            game_over(jogador);
 
-    return 0;*/
-     int status = 0;
-    save jogador = {0, 0, 1, 3, "Teste"};
-    fase fase1;
-
-//    menu();
-    do
-    {
-        fase1 = gera_fase(jogador.ultimafase);
-        status = movimentacao(&fase1, &jogador);
-    }
-    while (status == 1 && jogador.vidas > 0); // executa enquanto o jogador possui vidas e nao passou de fase
-    if (jogador.vidas == 0)
-//        gameover(jogador);
+    } while (!sair);
     return 0;
 }
 
@@ -408,7 +407,7 @@ int movimentacao(fase *fasea, save *jogador)
     int posicao = 20;
     int status = 0;
     int statusmove_E = 0;
-    char caracter, lolo = 'L';
+    char caracter = 'a', lolo = 'L';
     ponto pos_lolo, oldpos_lolo, inimigos[fasea->inimigos];
     int poder = 0, linha, coluna, contador = 0;
 
@@ -439,7 +438,7 @@ int movimentacao(fase *fasea, save *jogador)
     gotoxy(pos_lolo.x, pos_lolo.y);
     fasea->elementos[oldpos_lolo.y-1][oldpos_lolo.x-1] = ' ';
     fasea->elementos[pos_lolo.y-1][pos_lolo.x-1] = 'L';
-    while (caracter != ESC && status != 1) // o usuario pode se movimentar ate clicar esc (da para por aqui a tecla para voltar para o menu)
+    while (caracter != ESC && status != 1 && status != 2) // o usuario pode se movimentar ate clicar esc (da para por aqui a tecla para voltar para o menu)
     {
         gotoxy(oldpos_lolo.x,  oldpos_lolo.y);
         printf(" ");
@@ -481,15 +480,12 @@ int movimentacao(fase *fasea, save *jogador)
 
     if (status == 1)
     {
-        Sleep(500);
-        clrscr();
-        printf("Voce morreu!\n");
-        jogador->vidas--;
-        printf("Vidas restantes: %d\n", jogador->vidas);
-        Sleep(1000);
-        clrscr(); // limpa a tela para imprimir a outra fase
+        morreu(jogador);
     }
-//    salvar_arquivo(jogador);
+    else if (status == 2){
+        passou_de_fase(jogador);
+    }
+    salvar_arquivo(*jogador);
     return status;
 }
 
@@ -559,6 +555,7 @@ int contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *jogad
                 fasea->elementos[newpos_lolo.y][newpos_lolo.x] = ' ';
                 pos_lolo->x = newpos_lolo.x+1;
                 pos_lolo->y = newpos_lolo.y+1;
+                status = 2;
             }
             break;
         case 'B': // bloco movel
@@ -587,11 +584,14 @@ int movimenta_inimigo(ponto* inimigo, fase* fasea, int* status, int* poder){
     char  inimigo_char = 'E';
     char caracter;
 
-    if (inimigo->vivo){
+    if (fasea->elementos[inimigo->y-1][inimigo->x-1] == 'L')
+       {
+        inimigo->vivo = 0;
+        statusmove = 1;
+       }
+    else if (inimigo->vivo){
         pos_inimigo.x = inimigo->x-1;
         pos_inimigo.y = inimigo->y-1;
-        if (fasea->elementos[pos_inimigo.y][pos_inimigo.x] == 'L')
-            inimigo->vivo = 0;
         oldpos_inimigo.x = inimigo->x-1;
         oldpos_inimigo.y = inimigo->y-1;
         direcao = (rand() % 4);
@@ -689,6 +689,36 @@ void game_over(save jogador){
         fclose(arq);
         fclose(arqTemp);
         }
+    }
+}
+
+void morreu(save* jogador)
+{
+        Sleep(500);
+        clrscr();
+        printf("Voce morreu!\n");
+        jogador->vidas--;
+        jogador->totalpts = 0;
+        printf("Vidas restantes: %d\n", jogador->vidas);
+        printf("Salvando dados ...\n");
+        Sleep(1000);
+        clrscr(); // limpa a tela para imprimir a outra fase
+}
+
+void passou_de_fase(save* jogador)
+{
+    if (jogador->ultimafase == 3){
+
+    }
+    else{
+        Sleep(500);
+        clrscr();
+        printf("Voce passou de fase!\n");
+        jogador->ultimafase++;
+        printf("Vidas restantes: %d\n", jogador->vidas);
+        printf("Salvando dados ...\n");
+        Sleep(2000);
+        clrscr();
     }
 }
 
