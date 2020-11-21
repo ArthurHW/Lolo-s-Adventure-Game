@@ -407,7 +407,9 @@ int movimentacao(fase *fasea, save *jogador)
         printf(" ");
         gotoxy(pos_lolo.x, pos_lolo.y);
         printf("%c", lolo);
-        caracter = getch();
+        do
+            caracter = getch();
+        while(caracter != S_CIMA && caracter != S_BAIXO && caracter != S_ESQ && caracter != S_DIR && caracter != ESC); // executa ate ser uma tecla valida
         oldpos_lolo.x = pos_lolo.x;
         oldpos_lolo.y = pos_lolo.y;
         if (caracter != -32) // por algum motivo a função getch sempre retorna -32 quando o usuario digita uma seta e depois retorna a seta
@@ -438,25 +440,8 @@ int movimentacao(fase *fasea, save *jogador)
                               break;
             }
         }
-        fasea->elementos[oldpos_lolo.y-1][oldpos_lolo.x-1] = ' ';
+        fasea->elementos[oldpos_lolo.y-1][oldpos_lolo.x-1] = ' '; // atualiza a posicao antiga e atual do
         fasea->elementos[pos_lolo.y-1][pos_lolo.x-1] = 'L';
-//        if (status != 1)
-//        {
-//            if (caracter != -32) // por algum motivo a função getch sempre retorna -32 quando o usuario digita uma seta e depois retorna a seta
-//            {
-//                for (contador = 0; contador < numInimigos; contador++)
-//                {
-//                    if (inimigos[contador].vivo == 1)
-//                    {
-//                        do
-//                        {
-//                            statusmove_E = movimenta_inimigo(&inimigos[contador], fasea, &status, &poder);
-//                        }
-//                        while (statusmove_E == 0); // continua no loop enquanto o inimigo nao se mexeu
-//                    }
-//                }
-//            }
-//        }
         gotoxy(13,13);
         printf("\n");
         mostra_info(*jogador, poder); // funcao da info
