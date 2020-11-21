@@ -385,15 +385,11 @@ fase gera_fase(int numerofase)
     }
 }
 
-//Limpa o buffer do teclado
-void flush_in(){
-    int ch;
-    while( (ch = fgetc(stdin)) != EOF && ch != '\n' ){}
-}
+
 
 void movimentacao(fase *fasea, save *jogador)
 {
-
+    int posicao =20;
     char caracter, lolo = 'L';
     ponto inimigos[fasea->inimigos];
     int contador = 0;
@@ -432,6 +428,10 @@ void movimentacao(fase *fasea, save *jogador)
         cprintf("%c", lolo);
         fflush(stdin);
         caracter = getch();
+        //gotoxy(posicao, posicao);
+        //cprintf("%d", caracter);
+        //posicao++;
+        fflush(stdin);
         oldX = x;
         oldY = y;
         switch (caracter)
@@ -445,8 +445,10 @@ void movimentacao(fase *fasea, save *jogador)
             case S_DIR:   contato_lolo(S_DIR, &x, &y, &poder, fasea, jogador);
                           break;
         }
-        for (contador = 0; contador < fasea->inimigos; contador++){
-            movimenta_inimigo(&inimigos[contador], fasea);
+        if( caracter != -32){ // por algum motivo a função getch sempre retorna -32 quando o usuario digita uma seta e depois a seta
+            for (contador = 0; contador < fasea->inimigos; contador++){
+                movimenta_inimigo(&inimigos[contador], fasea);
+            }
         }
 
         gotoxy(13,13);
