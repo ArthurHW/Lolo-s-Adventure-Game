@@ -461,17 +461,17 @@ int movimentacao(fase *fasea, save *jogador)
 
         }
         if (status != 1){
-        switch (caracter)
-            {
-                case S_CIMA:  status = contato_lolo(S_CIMA, &pos_lolo, &poder, fasea, jogador);
-                              break;
-                case S_BAIXO: status = contato_lolo(S_BAIXO, &pos_lolo, &poder, fasea, jogador);
-                              break;
-                case S_ESQ:   status = contato_lolo(S_ESQ, &pos_lolo, &poder, fasea, jogador);
-                              break;
-                case S_DIR:   status = contato_lolo(S_DIR, &pos_lolo, &poder, fasea, jogador);
-                              break;
-            }
+            switch (caracter)
+                {
+                    case S_CIMA:  status = contato_lolo(S_CIMA, &pos_lolo, &poder, fasea, jogador);
+                                  break;
+                    case S_BAIXO: status = contato_lolo(S_BAIXO, &pos_lolo, &poder, fasea, jogador);
+                                  break;
+                    case S_ESQ:   status = contato_lolo(S_ESQ, &pos_lolo, &poder, fasea, jogador);
+                                  break;
+                    case S_DIR:   status = contato_lolo(S_DIR, &pos_lolo, &poder, fasea, jogador);
+                                  break;
+                }
         }
         fasea->elementos[oldpos_lolo.y-1][oldpos_lolo.x-1] = ' ';
         fasea->elementos[pos_lolo.y-1][pos_lolo.x-1] = 'L';
@@ -619,12 +619,18 @@ int movimenta_inimigo(ponto* inimigo, fase* fasea, int* status, int* poder){
         }
         else if (caracter == 'L'){
             if (*poder == 0){
+                gotoxy(oldpos_inimigo.x+1,oldpos_inimigo.y+1);
+                cprintf(" ");
+                gotoxy(pos_inimigo.x+1,pos_inimigo.y+1);
+                cprintf("E");
                 *status = 1;
                 statusmove = 1;
             }
             else {
-                *poder--;
+                (*poder)--;
+                fasea->inimigos--;
                 inimigo->vivo = 0;
+                fasea->elementos[oldpos_inimigo.y][oldpos_inimigo.x] = ' ';
                 gotoxy(oldpos_inimigo.x+1,oldpos_inimigo.y+1);
                 cprintf(" ");
                 statusmove = 1;
