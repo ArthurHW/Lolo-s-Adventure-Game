@@ -58,7 +58,7 @@ void mostra_info(save, int); // dado um save passado por cópia, mostra na tela s
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
 void hidecursor(); // funcao pra esconder o cursor
 fase gera_fase(int); // dado o numero de uma fase, preenche os elementos daquela fase em uma matriz contendo suas posicoes, e imprime a fase na tela
-int movimentacao(fase*, save*); // funcao para a movimentacao, dada uma fase e um save, retorna o status do lolo, 1 para se morreu e 0 para se passou de fase
+int movimentacao(fase*, save*, int*); // funcao para a movimentacao, dada uma fase e um save, retorna o status do lolo, 1 para se morreu e 0 para se passou de fase
 int contato_lolo(int, ponto*, int*, fase*, save*);
 /* contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para a posicao do lolo (ponto), contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
 retorna o status do lolo, 1 se morreu e 0 se passou*/
@@ -66,14 +66,14 @@ int movimenta_inimigo(ponto*, fase*, int*, int*, save*);
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
 void game_over(save); // dado o save de um jogador, apaga esse save do arquivo de saves e printa na tela game over
 void morreu(save*); // informa ao jogador que ele morreu e atualiza os dados necessarios
-void passou_de_fase(save*); // informa ao jogador que ele passou de fase, atualiza os dados necessarios e se ele está n ultima fase,
+void passou_de_fase(save*, int*); // informa ao jogador que ele passou de fase, atualiza os dados necessarios e se ele está n ultima fase,
 // informa que ele zerou o jogo
 
 
 // Função principal
 int main()
 {
-    int sair, status;
+    int sair, status, vencedor = 0;
     save jogador;
     fase fase1;
     do {
@@ -82,17 +82,14 @@ int main()
             do
             {
                 fase1 = gera_fase(jogador.ultimafase);
-                status = movimentacao(&fase1, &jogador);
+                status = movimentacao(&fase1, &jogador, &vencedor);
             }
-            while (jogador.vidas > 0 && jogador.ultimafase < 4 && status != -1); // executa enquanto o jogador possui vidas e nao passou de fase
-            if (jogador.vidas > 0 && jogador.ultimafase == 4 && status != -1){ // if para não gerar um loop
-                fase1 = gera_fase(jogador.ultimafase);
-                status = movimentacao(&fase1, &jogador);
-            }
+            while (jogador.vidas > 0 && jogador.ultimafase <= 4 && status != -1 && vencedor == 0); // executa enquanto o jogador possui vidas, nao passou de fase
         }
         if (jogador.vidas == 0)
             game_over(jogador);
-    } while (!sair);
+        }
+    while (!sair);
     return 0;
 }
 
@@ -260,7 +257,7 @@ int novoJogo(save* novo_jogador)
             // salvar os outros dados do jogador
             (*novo_jogador).identificador = id;
             (*novo_jogador).totalpts = 0;
-            (*novo_jogador).ultimafase = 1;
+            (*novo_jogador).ultimafase = 4;
             (*novo_jogador).vidas = 15;
 
 
@@ -465,7 +462,7 @@ fase gera_fase(int numerofase)
 }
 
 // controla toda a movimentacao do jogo, retorna 1 se o Lolo morreu, ou 2 se ele passou de fase
-int movimentacao(fase *fasea, save *jogador)
+int movimentacao(fase *fasea, save *jogador, int *vencedor)
 {
     int numInimigos;
     int status = 0;
@@ -557,7 +554,7 @@ int movimentacao(fase *fasea, save *jogador)
         morreu(jogador); // como jogador ja e um endereço n precisa do &
     }
     else if (status == 2){
-        passou_de_fase(jogador);
+        passou_de_fase(jogador, vencedor);
     }
     return status;
 }
@@ -738,7 +735,7 @@ void morreu(save* jogador)
         clrscr(); // limpa a tela para imprimir a outra fase
 }
 
-void passou_de_fase(save* jogador)
+void passou_de_fase(save* jogador, int *vencedor)
 {
     if (jogador->ultimafase == 4){
         clrscr();
@@ -748,6 +745,7 @@ void passou_de_fase(save* jogador)
         printf("Parabens voce resgatou a princesa!!\n");
         system("pause");
         clrscr();
+        *vencedor = 1;
     }
     else{
         Sleep(500);
