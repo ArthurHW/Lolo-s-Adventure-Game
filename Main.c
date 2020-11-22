@@ -1,3 +1,9 @@
+// Nomes:
+// Vitor Caruso Rodrigues Ferrer (00327023)
+// Arthur Henrique Wiebusch (00324318)
+
+// Optamos por alterar a representação do lolo de um @ para um L, devido à um bug visual que estava ocorrendo.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -53,7 +59,7 @@ e 0 para seguir para o jogo, também recebe um save que será atualizado na função
 void mostraCreditos(); // funcao para mostrar os creditos
 void sair(); // funcao para mostrar a mensagem de saida do jogo
 void instrucoes(); // imprime na tela as instruções do jogo
-int imprime_saves(FILE*);// dado um arquivo de saves, imprime todos os saves dele na tela formatados; retorna o número de saves do arquivo
+int imprime_saves(FILE*);// dado um arquivo de saves, imprime todos os saves dele na tela formatados, retorna o número de saves do arquivo
 void mostra_info(save, int); // dado um save passado por cópia, mostra na tela seu nome, fase atual, total de pts e número de vidas.
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
 void hidecursor(); // funcao pra esconder o cursor
@@ -63,7 +69,9 @@ int movimentacao(fase*, save*, int*); // funcao para a movimentacao do Lolo, dad
 int contato_lolo(int, ponto*, int*, fase*, save*);
 /* contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para a posicao do lolo (ponto), contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
 retorna o status do lolo, 1 se morreu e 0 se passou*/
-int movimenta_inimigo(ponto*, fase*, int*, int*, save*);
+int movimenta_inimigo(ponto*, fase*, int*, int*, save*); // movimenta aleatoriamente os inimigos, a cada movimento do lolo,
+// dado os ponteiros para um ponto (representando os inimigos), uma fase, um save e o status (se esta vivo ou morto) e poder (numero de coracoes)do lolo,
+// retornando um status de se o inimigo se moveu ou nao
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
 void game_over(save); // dado o save de um jogador, apaga esse save do arquivo de saves e printa na tela game over
 void morreu(save*); // informa ao jogador que ele morreu e atualiza os dados necessarios
@@ -87,7 +95,7 @@ int main()
             }
             while (jogador.vidas > 0 && jogador.ultimafase <= 4 && status != -1 && vencedor == 0); // executa enquanto o jogador possui vidas, nao passou de fase, nao clicou esc e nao venceu o jogo
         }
-        if (jogador.vidas == 0 && sair == 0)
+        if (jogador.vidas == 0 && sair == 0) ?/
             game_over(jogador);
     } while (!sair);
     return 0;
@@ -499,13 +507,13 @@ int movimentacao(fase *fasea, save *jogador, int *vencedor)
     gotoxy(pos_lolo.x, pos_lolo.y);
     fasea->elementos[oldpos_lolo.y-1][oldpos_lolo.x-1] = ' ';
     fasea->elementos[pos_lolo.y-1][pos_lolo.x-1] = 'L';
-    while (caracter != ESC && status != 1 && status != 2) // o usuario pode se movimentar ate clicar ESC, ou o Lolo morrer, ou passsar de fase
+    while (caracter != ESC && status != 1 && status != 2) // o usuario pode se movimentar ate clicar ESC, ou o Lolo morrer, ou passar de fase
     {
         gotoxy(oldpos_lolo.x,  oldpos_lolo.y);
         printf(" ");
         gotoxy(pos_lolo.x, pos_lolo.y);
         printf("%c", lolo);
-        // do while, pq ao ler uma seta, o getch sempre lia dois valores, um -32 e depois o caracter valido da seta
+        // do while para o programa so continuar caso o usuario digite uma tecla valida
         do
             caracter = getch();
         while(caracter != S_CIMA && caracter != S_BAIXO && caracter != S_ESQ && caracter != S_DIR && caracter != ESC); // executa ate ser uma tecla valida
@@ -737,7 +745,7 @@ void morreu(save* jogador)
 
 void passou_de_fase(save* jogador, int *vencedor)
 {
-    if (jogador->ultimafase == 4){
+    if (jogador->ultimafase == 4){ // caso seja a ultima fase e o jogador passar dela, ele venceu o jogo
         clrscr();
         printf("=======================================================================================================\n");
         printf("                                         VOCE VENCEU\n");
@@ -747,7 +755,7 @@ void passou_de_fase(save* jogador, int *vencedor)
         clrscr();
         *vencedor = 1;
     }
-    else{
+    else{ // senao, limpa a tela e salva os dados para preparar a proxima fase
         Sleep(500);
         clrscr();
         printf("Voce passou de fase!\n");
