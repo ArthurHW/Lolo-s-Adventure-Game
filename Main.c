@@ -78,13 +78,13 @@ int main()
     fase fase1;
     do {
         sair = menu(&jogador);
-        if (!sair){ // se o usuario n quer sair, roda o jgo com a fase obtida no menu
+        if (!sair){ // se o usuario n quer sair, roda o jogo com a fase obtida no menu
             do
             {
                 fase1 = gera_fase(jogador.ultimafase);
                 status = movimentacao(&fase1, &jogador);
             }
-            while (jogador.vidas > 0 && jogador.ultimafase <3); // executa enquanto o jogador possui vidas e nao passou de fase
+            while (jogador.vidas > 0 && jogador.ultimafase <3 && status != 0); // executa enquanto o jogador possui vidas e nao passou de fase
         }
         if (jogador.vidas == 0)
             game_over(jogador);
@@ -155,7 +155,7 @@ void instrucoes()
     clrscr();
     printf("======================================================================================================================\n                                                  INSTRUCOES ");
     printf("\n======================================================================================================================\n\n");
-    printf("  Controles:\nUtilize as setas do teclado para mover o Lolo\n\n  Cenario:\nL - Lolo -> Personagem controlado pelo jogador\nP - Pedra -> Lolo nao pode se mover para esta posicao\n");
+    printf("  Controles:\nUtilize as setas do teclado para mover o Lolo\nDurante o jogo, pressione ESC para voltar ao menu principal\n\n  Cenario:\nL - Lolo -> Personagem controlado pelo jogador\nP - Pedra -> Lolo nao pode se mover para esta posicao\n");
     printf("A - Agua -> Cuidado Lolo nao sabe nadar\nC - Coracao -> Ao pegar um coracao, Lolo pode tocar em um inimigo para elimina-lo\nB - Bloco movivel -> Lolo pode movimentar esse bloco, mas cuidado para nao ficar preso!\n");
     printf("E - Inimigo -> Os inimigos sao mais rapidos que o Lolo, entao na chegue muito perto, nao se esqueca dos coracoes\nT - Bau -> Apos derrotar todos os inimigos, corra ate ele para terminar a fase\n\n");
     printf("  Objetivo:\nO seu objetivo eh encontrar os coracoes, derrotar todos os inimigos e se dirigir ao bau para ir para a proxima fase\n\n");
