@@ -84,7 +84,11 @@ int main()
                 fase1 = gera_fase(jogador.ultimafase);
                 status = movimentacao(&fase1, &jogador);
             }
-            while (jogador.vidas > 0 && jogador.ultimafase <3 && status != 0); // executa enquanto o jogador possui vidas e nao passou de fase
+            while (jogador.vidas > 0 && jogador.ultimafase <3 && status != -1); // executa enquanto o jogador possui vidas e nao passou de fase
+            if (jogador.vidas > 0 && jogador.ultimafase == 3 && status != -1){ // if para não gerar um loop
+                fase1 = gera_fase(jogador.ultimafase);
+                status = movimentacao(&fase1, &jogador);
+            }
         }
         if (jogador.vidas == 0)
             game_over(jogador);
@@ -543,8 +547,10 @@ int movimentacao(fase *fasea, save *jogador)
         printf("\n");
         mostra_info(*jogador, poder); // funcao da info
     }
-
-    if (status == 1)
+    if (caracter == ESC){
+        status = -1;
+    }
+    else if (status == 1)
     {
         morreu(jogador); // como jogador ja e um endereço n precisa do &
     }
@@ -733,7 +739,13 @@ void morreu(save* jogador)
 void passou_de_fase(save* jogador)
 {
     if (jogador->ultimafase == 3){
-
+        clrscr();
+        printf("=======================================================================================================\n");
+        printf("                                         VOCE VENCEU\n");
+        printf("=======================================================================================================\n");
+        printf("Parabens vocc resgatou a princesa!!\n");
+        system("pause");
+        clrscr();
     }
     else{
         Sleep(500);
