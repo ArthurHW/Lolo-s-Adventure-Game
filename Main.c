@@ -62,7 +62,7 @@ int movimentacao(fase*, save*); // funcao para a movimentacao, dada uma fase e u
 int contato_lolo(int, ponto*, int*, fase*, save*);
 /* contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para a posicao do lolo (ponto), contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
 retorna o status do lolo, 1 se morreu e 0 se passou*/
-int movimenta_inimigo(ponto*, fase*, int*, int*);
+int movimenta_inimigo(ponto*, fase*, int*, int*, save*);
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
 void game_over(save); // dado o save de um jogador, apaga esse save do arquivo de saves e printa na tela game over
 void morreu(save*); // informa ao jogador que ele morreu e atualiza os dados necessarios
@@ -508,20 +508,20 @@ int movimentacao(fase *fasea, save *jogador)
         while(caracter != S_CIMA && caracter != S_BAIXO && caracter != S_ESQ && caracter != S_DIR && caracter != ESC); // executa ate ser uma tecla valida
         oldpos_lolo.x = pos_lolo.x;
         oldpos_lolo.y = pos_lolo.y;
-            for (contador = 0; contador < numInimigos; contador++)
+        for (contador = 0; contador < numInimigos; contador++)
+        {
+            i = 0;
+            if (inimigos[contador].vivo == 1) // executa se o inimigo estiver vivo
             {
-                i = 0;
-                if (inimigos[contador].vivo == 1) // executa se o inimigo estiver vivo
+                do
                 {
-                    do
-                    {
-                        statusmove_E = movimenta_inimigo(&inimigos[contador], fasea, &status, &poder);
-                        i++;
-                    }
-                    while (statusmove_E == 0 && i<5); // continua no loop enquanto o inimigo nao se mexeu, ou enquanto i for <5, para evitar crashar
-                                                      // crashar o programa, caso o inimigo fique preso
+                    statusmove_E = movimenta_inimigo(&inimigos[contador], fasea, &status, &poder, jogador);
+                    i++;
                 }
+                while (statusmove_E == 0 && i<5); // continua no loop enquanto o inimigo nao se mexeu, ou enquanto i for <5, para evitar
+                                                  // crashar o programa, caso o inimigo fique preso
             }
+        }
         // se o inimigo não matou o Lolo, então trata a ação dele
         if (status != 1)
         {
@@ -607,6 +607,8 @@ int contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *jogad
                 (*poder)--; // diminui 1 do poder e dos inimigos
                 fasea->inimigos--;
                 jogador->totalpts++;
+                if (jogador->totalpts % 10 == 0) // aumenta em 1 o numero de vidas do jogador a cada 10 pontos
+                    jogador->vidas++;
             }
             else
             {
@@ -644,7 +646,7 @@ int contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *jogad
 }
 
 // Função que controla a movimentação do inimigo
-int movimenta_inimigo(ponto* inimigo, fase* fasea, int* status, int* poder){
+int movimenta_inimigo(ponto* inimigo, fase* fasea, int* status, int* poder, save* jogador){
     int direcao, statusmove = 0;
     ponto oldpos_inimigo, pos_inimigo;
     char inimigo_char = 'E';
@@ -700,6 +702,9 @@ int movimenta_inimigo(ponto* inimigo, fase* fasea, int* status, int* poder){
                     fasea->elementos[oldpos_inimigo.y][oldpos_inimigo.x] = ' ';
                     gotoxy(oldpos_inimigo.x+1,oldpos_inimigo.y+1);
                     cprintf(" ");
+                    jogador->totalpts++;
+                    if (jogador->totalpts % 10 == 0)
+                        jogador->vidas++;
                     statusmove = 1;
                 }
             }
