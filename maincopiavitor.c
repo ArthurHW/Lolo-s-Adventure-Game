@@ -53,7 +53,7 @@ int contato_lolo(int, ponto*, int*, fase*, save*);
 retorna o status do lolo, 1 se morreu e 0 se passou*/
 void mostra_info(save, int); // dado um save passado por cópia, mostra na tela seu nome, fase atual, total de pts e número de vidas.
 void salvar_arquivo(save); // dado um save passado por cópia, escreve os dados dele alterados no arquivo de saves
-int movimenta_inimigo(ponto*, fase*, int*, int*);
+int movimenta_inimigo(ponto*, fase*, int*, int*, save*);
 void game_over(save); // dado o save de um jogador, apaga esse save do arquivo de saves e printa na tela game over
 void morreu(save*); // informa ao jogador que ele morreu e atualiza os dados necessarios
 void passou_de_fase(save*); // informa ao jogador que ele passou de fase, atualiza os dados necessarios e se ele está n ultima fase, informa que ele zerou o jogo
@@ -62,7 +62,7 @@ void passou_de_fase(save*); // informa ao jogador que ele passou de fase, atuali
 int main()
 {
     int status = 0;
-    save jogador = {0, 0, 3, 3, "Teste"};
+    save jogador = {0, 0, 2, 3, "Teste"};
     fase fase1;
 
 //    menu();
@@ -412,20 +412,17 @@ int movimentacao(fase *fasea, save *jogador)
         while(caracter != S_CIMA && caracter != S_BAIXO && caracter != S_ESQ && caracter != S_DIR && caracter != ESC); // executa ate ser uma tecla valida
         oldpos_lolo.x = pos_lolo.x;
         oldpos_lolo.y = pos_lolo.y;
-        if (caracter != -32) // por algum motivo a função getch sempre retorna -32 quando o usuario digita uma seta e depois retorna a seta
-        {
             for (contador = 0; contador < numInimigos; contador++)
             {
                 if (inimigos[contador].vivo == 1) // executa se o inimigo estiver vivo
                 {
                     do
                     {
-                        statusmove_E = movimenta_inimigo(&inimigos[contador], fasea, &status, &poder);
+                        statusmove_E = movimenta_inimigo(&inimigos[contador], fasea, &status, &poder, jogador);
                     }
                     while (statusmove_E == 0); // continua no loop enquanto o inimigo nao se mexeu
                 }
             }
-        }
         if (status != 1)
         {
             switch (caracter)
@@ -510,6 +507,8 @@ int contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *jogad
                 (*poder)--; // diminui 1 do poder e dos inimigos
                 fasea->inimigos--;
                 jogador->totalpts++;
+                if (jogador->totalpts % 10 == 0) // aumenta em 1 o numero de vidas do jogador a cada 10 pontos
+                    jogador->vidas++;
             }
             else
             {
@@ -620,7 +619,7 @@ void game_over(save jogador){
     }
 }
 
-int movimenta_inimigo(ponto* inimigo, fase* fasea, int* status, int* poder){
+int movimenta_inimigo(ponto* inimigo, fase* fasea, int* status, int* poder, save* jogador){
     int direcao, statusmove = 0;
     ponto oldpos_inimigo, pos_inimigo;
     char inimigo_char = 'E';
@@ -666,12 +665,15 @@ int movimenta_inimigo(ponto* inimigo, fase* fasea, int* status, int* poder){
                     statusmove = 1;
                 }
                 else {
-                    (*poder)--;
+                    (*poder)--;;
                     fasea->inimigos--;
                     inimigo->vivo = 0;
                     fasea->elementos[oldpos_inimigo.y][oldpos_inimigo.x] = ' ';
                     gotoxy(oldpos_inimigo.x+1,oldpos_inimigo.y+1);
                     cprintf(" ");
+                    jogador->totalpts++;
+                    if (jogador->totalpts % 10 == 0) //
+                        jogador->vidas++;
                     statusmove = 1;
                 }
             }
