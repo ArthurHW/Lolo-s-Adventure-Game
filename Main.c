@@ -90,7 +90,7 @@ int main()
                 status = movimentacao(&fase1, &jogador);
             }
         }
-        if (jogador.vidas == 0)
+        if (jogador.vidas == 0 && sair == 0)
             game_over(jogador);
     } while (!sair);
     return 0;
