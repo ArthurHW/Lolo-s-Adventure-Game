@@ -39,6 +39,7 @@ typedef struct fase {
                             // o erro ja foi corrigido, mas deixamos assim pq n faz dferença no resto do programa
 }fase;
 
+// representa um ponto, com coordenadas x e y, e um indicador de se ele esta vivo ou nao (para o caso dos inimigos)
 typedef struct ponto {
     char x;
     char y;
@@ -82,10 +83,11 @@ void passou_de_fase(save*, int*); // informa ao jogador que ele passou de fase, 
 // Função principal
 int main()
 {
-    int sair, status, vencedor = 0;;
+    int sair, status, vencedor;
     save jogador;
     fase fase1;
     do {
+        vencedor = 0;
         sair = menu(&jogador);
         if (!sair){ // se o usuario n quer sair, roda o jogo com a fase obtida no menu
             do
@@ -238,7 +240,6 @@ int novoJogo(save* novo_jogador)
 
 
         }
-
 
         if (op != 2){
             // se o usuario quer sobrescrever seus dados, perguntar qual jogador sobrescrever
