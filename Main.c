@@ -95,7 +95,7 @@ int main()
             }
             while (jogador.vidas > 0 && jogador.ultimafase <= 4 && status != -1 && vencedor == 0); // executa enquanto o jogador possui vidas, nao passou de fase, nao clicou esc e nao venceu o jogo
         }
-        if (jogador.vidas == 0 && sair == 0) ?/
+        if (jogador.vidas == 0 && sair == 0)
             game_over(jogador);
     } while (!sair);
     return 0;
