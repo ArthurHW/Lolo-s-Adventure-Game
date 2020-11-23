@@ -318,7 +318,7 @@ int carregarJogo(save* jogador)
                     fclose(arq);
                     return 1;
                 }
-            } while(0 > id || id > numSaves); // ler o id que o usuario está tentando acessar até que ele digite um id que existe, ou -1 para voltar ao menu
+            } while(0 > id || id >= numSaves); // ler o id que o usuario está tentando acessar até que ele digite um id que existe, ou -1 para voltar ao menu
             // após isso, achar o arquivo, e passar seus dados para a variavel *jogador que foi passada por referência
             fseek(arq, sizeof(save)*id, SEEK_SET);
             if(fread(jogador, sizeof(save), 1, arq) != 1)
