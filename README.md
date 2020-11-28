@@ -1,25 +1,18 @@
-"# Trabalho_Final"
+# Jogo Lolo's Adventure
 
-Movimentacao e controles do Lolo em tempo real - Vitor (pronto)
+#### Implementação do Jogo Lolo's Adventure em C, em formato texto (ASCII art)
 
-Fases:
+### imagens do jogo original:
 
-fase 1 - Arthur (feito)
-fase 2 - Vitor (feito)
-fase 3 - 
+<img src="imagens\boxartlolo1us.jpg" width="150">
+<img src= "imagens\hqdefault.jpg" height=215>
 
-Pontuacao e vidas - 
+### Formato implementado no trabalho:
 
-Save em arquivo binario - Arthur (feito)
+<img src="imagens\Captura de tela 2020-11-28 085016.png" >
+<img src="imagens\Captura de tela 2020-11-28 085123.png" >
 
-Carregar o mapa do arquivo texto e imprimir na tela - Vitor (pronto)
+#### Desenvolvido por:
 
-Identificar os elementos do mapa - Vitor (pronto)
-
-Objetos e interacao do Lolo com eles - Vitor (fazendo)
-
-Movimentacao dos inimigos - 
-
-Implementar cheat codes (opcional) - 
-
-Comecar novo jogo e Carregar Jogos - Arthur (Quase pronto "eu acho")
+## [Arthur Henrique Wiebusch](https://github.com/ArthurHW) 
+## [Vitor Caruso Rodrigues Ferrer](https://github.com/CarusoVitor)
