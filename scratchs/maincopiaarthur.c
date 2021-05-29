@@ -1,9 +1,3 @@
-// Nomes:
-// Vitor Caruso Rodrigues Ferrer (00327023)
-// Arthur Henrique Wiebusch (00324318)
-
-// Optamos por alterar a representacao do lolo de um @ para um L, devido a um bug visual que estava ocorrendo.
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -20,7 +14,7 @@
 #define S_DIR 77
 #define ESC 27
 
-// definicao das structs:
+// defini��o das structs:
 // representa os dados de um registro de um jogador
 typedef struct gravacao
 {
@@ -38,10 +32,9 @@ typedef struct fase
     int tamanhoy;
     int inimigos;
     char elementos[14][14]; // era pra ser 13 por 14 por causa do \n, mas deu um erro ai a gente teve que alterar pra 14 por 14
-                            // o erro ja foi corrigido, mas deixamos assim pq n faz dferenca no resto do programa
+                            // o erro ja foi corrigido, mas deixamos assim pq n faz dferen�a no resto do programa
 } fase;
 
-// representa um ponto, com coordenadas x e y, e um indicador de se ele esta vivo ou nao (para o caso dos inimigos)
 typedef struct ponto
 {
     char x;
@@ -49,64 +42,60 @@ typedef struct ponto
     int vivo;
 } ponto;
 
-// prototipos das funcoes auxiliares:
-int menu(save *);                        /*funcao que administra os menus do jogo, ela retorna 1 para a main caso o usuario queira sair do programa
+// prot�tipos das fun��es auxiliares:
+int menu(save *);                 /*fun��o que administra os menus do jogo, ela retorna 1 para a main caso o usuario queira sair do programa
 e 0 caso o usuario esteja carregando ou criando um novo jogo, ela recebe uma struct do tipo save por refer�ncia e atualiza ela
-com os dados do save que o jogador escolheu; caso o usuario so queira sair do programa, nao faz nada com o save dado.*/
-void imprime_menu();                     // funcao para imprimir o menu do jogo
-char validaentrada();                    // funcao para validar a entrada da opcao do jogo, retorna a opcao selecionada pelo usuario
-int novoJogo(save *);                    /* funcao para comecar um novo jogo, ela retorna 1, caso o usuario digitou para voltar ao menu principal
-e 0 caso o usuario tenha ido ate o fim do processo de criar um novo jogo. Ela recebe um save por referencia e atualiza ele
+com os dados do save que o jogador escolheu; caso o usuario s� queira sair do programa, n�o faz nada com o save dado.*/
+void imprime_menu();              // funcao para imprimir o menu do jogo
+char validaentrada();             // funcao para validar a entrada da opcao do jogo, retorna a op��o selecionada pelo usuario
+int novoJogo(save *);             /* funcao para comecar um novo jogo, ela retorna 1, caso o usuario digitou para voltar ao menu principal
+e 0 caso o usuario tenha ido at� o fim do processo de criar um novo jogo. Ela recebe um save por referencia e atualiza ele
 para corresponder aos dados do save que acabou de ser criado*/
-int carregarJogo(save *);                /* funcao para carregar um jogo ja comecado, assim como funcao novo jogo retorna 1 para voltar ao menu principal
-e 0 para seguir para o jogo, tambem recebe um save que sera atualizado na funcao*/
-void mostraCreditos();                   // funcao para mostrar os creditos
-void sair();                             // funcao para mostrar a mensagem de saida do jogo
-void instrucoes();                       // imprime na tela as instrucoes do jogo
-int imprime_saves(FILE *);               // dado um arquivo de saves, imprime todos os saves dele na tela formatados, retorna o numero de saves do arquivo
-void mostra_info(save, int);             // dado um save passado por copia, mostra na tela seu nome, fase atual, total de pts e numero de vidas.
-void salvar_arquivo(save);               // dado um save passado por copia, escreve os dados dele alterados no arquivo de saves
-void hidecursor();                       // funcao pra esconder o cursor
-fase gera_fase(int);                     // dado o numero de uma fase, preenche os elementos daquela fase em uma matriz contendo suas posicoes, e imprime a fase na tela
-int movimentacao(fase *, save *, int *); // funcao para a movimentacao do Lolo, dado o ponteiro para uma fase, um save e um ponteiro para verificar se o usuario terminou o jogo
-// retorna o status do lolo, 1 para se morreu e 0 para se passou de fase
+int carregarJogo(save *);         /* funcao para carregar um jogo ja comecado, assim como fun��o novo jogo retorna 1 para voltar ao menu principal
+e 0 para seguir para o jogo, tamb�m recebe um save que ser� atualizado na fun��o*/
+void mostraCreditos();            // funcao para mostrar os creditos
+void sair();                      // funcao para mostrar a mensagem de saida do jogo
+void instrucoes();                // imprime na tela as instru��es do jogo
+int imprime_saves(FILE *);        // dado um arquivo de saves, imprime todos os saves dele na tela formatados; retorna o n�mero de saves do arquivo
+void mostra_info(save, int);      // dado um save passado por c�pia, mostra na tela seu nome, fase atual, total de pts e n�mero de vidas.
+void salvar_arquivo(save);        // dado um save passado por c�pia, escreve os dados dele alterados no arquivo de saves
+void hidecursor();                // funcao pra esconder o cursor
+fase gera_fase(int);              // dado o numero de uma fase, preenche os elementos daquela fase em uma matriz contendo suas posicoes, e imprime a fase na tela
+int movimentacao(fase *, save *); // funcao para a movimentacao, dada uma fase e um save, retorna o status do lolo, 1 para se morreu e 0 para se passou de fase
 int contato_lolo(int, ponto *, int *, fase *, save *);
 /* contato do lolo com os blocos, dada uma seta(direcao), o ponteiro para a posicao do lolo (ponto), contagem de coracoes (poder) do lolo, uma fase e um save (para atualizar os dados)
 retorna o status do lolo, 1 se morreu e 0 se passou*/
-int movimenta_inimigo(ponto *, fase *, int *, int *, save *); // movimenta aleatoriamente os inimigos, a cada movimento do lolo,
-// dado os ponteiros para um ponto (representando os inimigos), uma fase, um save e o status (se esta vivo ou morto) e poder (numero de coracoes)do lolo,
-// retornando um status de se o inimigo se moveu ou nao
-void salvar_arquivo(save);          // dado um save passado por copia, escreve os dados dele alterados no arquivo de saves
-void game_over(save);               // dado o save de um jogador, apaga esse save do arquivo de saves e printa na tela game over
-void morreu(save *);                // informa ao jogador que ele morreu e atualiza os dados necessarios
-void passou_de_fase(save *, int *); // informa ao jogador que ele passou de fase, atualiza os dados necessarios e se ele est� na ultima fase
+int movimenta_inimigo(ponto *, fase *, int *, int *);
+void salvar_arquivo(save);   // dado um save passado por c�pia, escreve os dados dele alterados no arquivo de saves
+void game_over(save);        // dado o save de um jogador, apaga esse save do arquivo de saves e printa na tela game over
+void morreu(save *);         // informa ao jogador que ele morreu e atualiza os dados necessarios
+void passou_de_fase(save *); // informa ao jogador que ele passou de fase, atualiza os dados necessarios e se ele est� n ultima fase,
 // informa que ele zerou o jogo
 
 // Fun��o principal
 int main()
 {
-    int sair, status, vencedor;
+    int sair, status;
     save jogador;
     fase fase1;
     do
     {
-        vencedor = 0;
         sair = menu(&jogador);
         if (!sair)
-        { // se o usuario n quer sair, roda o jogo com a fase obtida no menu
+        { // se o usuario n quer sair, roda o jogo com a fase que o jogador obtido no menu esta
             do
             {
                 fase1 = gera_fase(jogador.ultimafase);
-                status = movimentacao(&fase1, &jogador, &vencedor);
-            } while (jogador.vidas > 0 && jogador.ultimafase <= 4 && status != -1 && vencedor == 0); // executa enquanto o jogador possui vidas, nao passou de fase, nao clicou esc e nao venceu o jogo
+                status = movimentacao(&fase1, &jogador);
+            } while (jogador.vidas > 0 && jogador.ultimafase < 3 && status != -1); // executa enquanto o jogador possui vidas e nao passou de fase
         }
-        if (jogador.vidas == 0 && sair == 0)
+        if (jogador.vidas == 0)
             game_over(jogador);
     } while (!sair);
     return 0;
 }
 
-// Funcoes Auxiliares
+// Fun��es Auxiliares
 
 void hidecursor() // https://stackoverflow.com/questions/30126490/how-to-hide-console-cursor-in-c
 {
@@ -117,7 +106,7 @@ void hidecursor() // https://stackoverflow.com/questions/30126490/how-to-hide-co
     SetConsoleCursorInfo(consoleHandle, &info);
 }
 
-// funcao que coordena os menus, ela retorna 0, caso o usuario tenha entrado em um save, ou 1 caso o usuario queira sair do programa
+// fun��o que coordena os menus, ela retorna 0, caso o usuario tenha entrado em um save, ou 1 caso o usuario queira sair do programa
 int menu(save *jogador)
 {
     int volta = 1;
@@ -148,7 +137,7 @@ int menu(save *jogador)
             instrucoes();
             break;
         }
-    } while (opcao != 'S' && volta); // enquanto o usuario nao queia sair do programa, ou nao tenha entrado em um "save"
+    } while (opcao != 'S' && volta); // enquanto o usuario nao queia sair do programa, ou n�o tenha entrado em um "save"
     clrscr();
     return 0;
 }
@@ -169,7 +158,7 @@ void mostraCreditos()
     clrscr();
 }
 
-// funcao para mostrar as instrucoes para o usuario
+// fun��o para mostrar as instrucoes para o usuario
 void instrucoes()
 {
     clrscr();
@@ -179,8 +168,8 @@ void instrucoes()
     printf("A - Agua -> Cuidado Lolo nao sabe nadar\nC - Coracao -> Ao pegar um coracao, Lolo pode tocar em um inimigo para elimina-lo\nB - Bloco movivel -> Lolo pode movimentar esse bloco, mas cuidado para nao ficar preso!\n");
     printf("E - Inimigo -> Os inimigos sao mais rapidos que o Lolo, entao na chegue muito perto, nao se esqueca dos coracoes\nT - Bau -> Apos derrotar todos os inimigos, corra ate ele para terminar a fase\n\n");
     printf("  Objetivo:\nO seu objetivo eh encontrar os coracoes, derrotar todos os inimigos e se dirigir ao bau para ir para a proxima fase\n\n");
-    printf("  Pontuacao e vidas:\nLolo comeca o jogo com 3 vidas e 0 pontos, para cada inimigo eliminado Lolo ganha um ponto, a cada 10 pontos\nconsecutivos Lolo ganha uma vida extra,");
-    printf(" se for eliminado a fase recomeca com a pontuacao zerada, alem de Lolo perder uma vida\n\n");
+    printf("  Pontuacao e vidas:\nLolo comeca o jogo com 3 vidas e 0 pontos, para cada inimigo eliminado Lolo ganha um ponto, a cada 10 pontos\nconsecutivos Lolo ganha uma vida extra");
+    printf("se for eliminado a fase recomeca com a pontuacao zerada, alem de Lolo perder uma \nvida\n\n");
     printf("  Numero de gravacoes\nVoce pode ter ate 3 gravacoes simultaneas, com cada uma correspondendo ao ponto do jogo onde parou. \nObs: Ao entrar em um gravacao a fase em que voce estava eh resetada.\n");
     system("pause");
     clrscr();
@@ -192,7 +181,7 @@ void sair()
     printf("Encerrando o jogo, ateh a proxima!\n");
 }
 
-// funcao para validacao da entrada do usuario para navegar entre os menus
+// fun��o para valida��o da entrada do usu�rio para navegar entre os menus
 char validaentrada()
 {
     char opcao;
@@ -286,7 +275,7 @@ int novoJogo(save *novo_jogador)
                 printf("Erro na escrita do save!\n");
         }
     }
-    // fechar o arquivo e nao voltar ao menu, pois o retorno 1 encerra a fun��o menu tamb�m
+    // fechar o arquivo e n�o voltar ao menu, pois o retorno 1 encerra a fun��o menu tamb�m
     clrscr();
     fclose(arq);
     return 0;
@@ -299,7 +288,7 @@ int carregarJogo(save *jogador)
     FILE *arq;
     int id, numSaves;
     // abre o arquivo dos saves
-    if (!(arq = fopen("saves/saves.bin", "r+b")))
+    if (!(arq = fopen("saves.bin", "r+b")))
         printf("Erro na abertura do arquivo!\n");
     else
     {
@@ -330,12 +319,12 @@ int carregarJogo(save *jogador)
                 else if (id == 10)
                 {
                     fclose(arq);
-                    if (!(arq = fopen("saves/saves.bin", "wb")))
+                    if (!(arq = fopen("saves.bin", "wb")))
                         printf("Erro na abertura do arquivo!\n");
                     fclose(arq);
                     return 1;
                 }
-            } while (0 > id || id >= numSaves); // ler o id que o usuario est� tentando acessar at� que ele digite um id que existe, ou -1 para voltar ao menu
+            } while (0 > id || id > numSaves); // ler o id que o usuario est� tentando acessar at� que ele digite um id que existe, ou -1 para voltar ao menu
             // ap�s isso, achar o arquivo, e passar seus dados para a variavel *jogador que foi passada por refer�ncia
             fseek(arq, sizeof(save) * id, SEEK_SET);
             if (fread(jogador, sizeof(save), 1, arq) != 1)
@@ -356,7 +345,7 @@ int imprime_saves(FILE *arq)
     rewind(arq);
     // enquanto n�o chegar no final do arquivo
     while (!feof(arq))
-    { // le o arquivo
+    { // l� o arquivo
         if (fread(&jogador, sizeof(save), 1, arq) == 1)
         {
             // e imprime os saves
@@ -369,10 +358,10 @@ int imprime_saves(FILE *arq)
         }
     }
     return numSaves; // retorna o n�mero de saves lidos
-    // a funcao nao fecha o arquivo, pois isso eh responsabilidade da funcao que a chamou
+    // a fun��o n�o fecha o arquivo, pois isso � responsabilidade da fun��o que a chamou
 }
 
-// funcao para mostrar as informacoes do jogador durante o jogo
+// fun��o para mostrar as informa��es do jogador durante o jogo
 void mostra_info(save jogador, int poder)
 {
 
@@ -383,7 +372,7 @@ void mostra_info(save jogador, int poder)
 void salvar_arquivo(save jogador)
 {
     FILE *arq;
-    if (!(arq = fopen("saves/saves.bin", "r+b")))
+    if (!(arq = fopen("saves.bin", "r+b")))
         printf("Erro na abertura do arquivo!\n");
     else
     {
@@ -394,24 +383,24 @@ void salvar_arquivo(save jogador)
     }
 }
 
-// essa funcao apaga o registro do jogador, que perdeu
+// essa fun��o apaga o registro do jogador, que perdeu
 void game_over(save jogador)
 {
     FILE *arqTemp;
     FILE *arq;
     save buffer;
     int id = 0;
-    // abertura do arquivo temporario e do arquivo permanente
-    if (!(arqTemp = fopen("saves/savestemp.bin", "wb+")))
-        printf("Erro na abertura do arquivo temporario\n");
+    // abertura do arquivo tempor�rio e do arquivo permanente
+    if (!(arqTemp = fopen("savestemp.bin", "wb+")))
+        printf("Erro na abertura do arquivo tempor�rio\n");
     else
     {
-        if (!(arq = fopen("saves/saves.bin", "r+b")))
+        if (!(arq = fopen("saves.bin", "r+b")))
         {
             printf("Erro na abertura do arquivo de saves\n");
         }
-        // enquanto nao chegar no fim do arquivo permanente, le ele e grava os jogadores que nao tem o id do jogador
-        // dado no arquivo tempor�rio, assim o arquivo temporario tem uma copia do arquivo permanente, com os dados do jogador
+        // enquanto n�o chegar no fim do arquivo permanente, l� ele e grava os jogadores que n�o tem o id do jogador
+        // dado no arquivo tempor�rio, assim o arquivo tempor�rio tem uma c�pia do arquivo permanente, com os dados do jogador
         // dado "exclu�dos"
         else
         {
@@ -426,13 +415,13 @@ void game_over(save jogador)
                     }
                 }
             }
-            // fecha o arquivo tempoario e abre ele denovo, em modo de escrita, deletando seus dados
+            // fecha o arquivo tempo�rio e abre ele denovo, em modo de escrita, deletando seus dados
             fclose(arq);
-            if (!(arq = fopen("saves/saves.bin", "w+b")))
+            if (!(arq = fopen("saves.bin", "w+b")))
             {
                 printf("Erro na abertura do arquivo de saves em modo de escrita\n");
             }
-            // Passa os saves do arquivo temporario para o arquivo permanente, porem com o id atualizado
+            // Passa os saves do arquivo tempor�rio para o arquivo permanente, por�m com o id atualizado
             else
             {
                 rewind(arqTemp);
@@ -466,27 +455,24 @@ fase gera_fase(int numerofase)
     FILE *arq;
     int linha, coluna;
     fase fasea;
-    char nome[20];
+    char nome[10];
 
     switch (numerofase) // coloca o nome do arquivo dependendo do numero da fase
     {
     case 1:
-        strncpy(nome, "levels/Fase1.txt", 20);
+        strncpy(nome, "Fase1.txt", 10);
         break;
     case 2:
-        strncpy(nome, "levels/Fase2.txt", 20);
+        strncpy(nome, "Fase2.txt", 10);
         break;
     case 3:
-        strncpy(nome, "levels/Fase3.txt", 20);
-        break;
-    case 4:
-        strncpy(nome, "levels/Fase4.txt", 20);
+        strncpy(nome, "Fase3.txt", 10);
         break;
     }
 
     arq = fopen(nome, "r"); // abre o arquivo correto
     if (arq == NULL)
-        perror("Erro ao abrir o arquivo de fase");
+        perror("Erro ao abrir o arquivo");
     else
     {
         fasea.inimigos = 0;
@@ -508,7 +494,7 @@ fase gera_fase(int numerofase)
 }
 
 // controla toda a movimentacao do jogo, retorna 1 se o Lolo morreu, ou 2 se ele passou de fase
-int movimentacao(fase *fasea, save *jogador, int *vencedor)
+int movimentacao(fase *fasea, save *jogador)
 {
     int numInimigos;
     int status = 0;
@@ -548,13 +534,13 @@ int movimentacao(fase *fasea, save *jogador, int *vencedor)
     gotoxy(pos_lolo.x, pos_lolo.y);
     fasea->elementos[oldpos_lolo.y - 1][oldpos_lolo.x - 1] = ' ';
     fasea->elementos[pos_lolo.y - 1][pos_lolo.x - 1] = 'L';
-    while (caracter != ESC && status != 1 && status != 2) // o usuario pode se movimentar ate clicar ESC, ou o Lolo morrer, ou passar de fase
+    while (caracter != ESC && status != 1 && status != 2) // o usuario pode se movimentar ate clicar ESC, ou o Lolo morrer, ou passsar de fase
     {
         gotoxy(oldpos_lolo.x, oldpos_lolo.y);
         printf(" ");
         gotoxy(pos_lolo.x, pos_lolo.y);
         printf("%c", lolo);
-        // do while para o programa so continuar caso o usuario digite uma tecla valida
+        // do while, pq ao ler uma seta, o getch sempre lia dois valores, um -32 e depois o caracter valido da seta
         do
             caracter = getch();
         while (caracter != S_CIMA && caracter != S_BAIXO && caracter != S_ESQ && caracter != S_DIR && caracter != ESC); // executa ate ser uma tecla valida
@@ -567,13 +553,13 @@ int movimentacao(fase *fasea, save *jogador, int *vencedor)
             {
                 do
                 {
-                    statusmove_E = movimenta_inimigo(&inimigos[contador], fasea, &status, &poder, jogador);
+                    statusmove_E = movimenta_inimigo(&inimigos[contador], fasea, &status, &poder);
                     i++;
-                } while (statusmove_E == 0 && i < 5); // continua no loop enquanto o inimigo nao se mexeu, ou enquanto i for <5, para evitar
+                } while (statusmove_E == 0 && i < 5); // continua no loop enquanto o inimigo nao se mexeu, ou enquanto i for <5, para evitar crashar
                                                       // crashar o programa, caso o inimigo fique preso
             }
         }
-        // se o inimigo nao matou o Lolo, entao trata a acao dele
+        // se o inimigo n�o matou o Lolo, ent�o trata a a��o dele
         if (status != 1)
         {
             switch (caracter)
@@ -598,22 +584,23 @@ int movimentacao(fase *fasea, save *jogador, int *vencedor)
         printf("\n");
         mostra_info(*jogador, poder); // funcao da info
     }
+
     if (caracter == ESC)
     {
         status = -1;
     }
     else if (status == 1)
     {
-        morreu(jogador); // como jogador ja e um endereco n precisa do &
+        morreu(jogador); // como jogador ja e um endere�o n precisa do &
     }
     else if (status == 2)
     {
-        passou_de_fase(jogador, vencedor);
+        passou_de_fase(jogador);
     }
     return status;
 }
 
-// trata a acao do Lolo
+// trata a a��o do Lolo
 int contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *jogador)
 {
     int status = 0;
@@ -666,8 +653,6 @@ int contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *jogad
             (*poder)--; // diminui 1 do poder e dos inimigos
             fasea->inimigos--;
             jogador->totalpts++;
-            if (jogador->totalpts % 10 == 0) // aumenta em 1 o numero de vidas do jogador a cada 10 pontos
-                jogador->vidas++;
         }
         else
         {
@@ -705,7 +690,7 @@ int contato_lolo(int seta, ponto *pos_lolo, int *poder, fase *fasea, save *jogad
 }
 
 // Fun��o que controla a movimenta��o do inimigo
-int movimenta_inimigo(ponto *inimigo, fase *fasea, int *status, int *poder, save *jogador)
+int movimenta_inimigo(ponto *inimigo, fase *fasea, int *status, int *poder)
 {
     int direcao, statusmove = 0;
     ponto oldpos_inimigo, pos_inimigo;
@@ -720,7 +705,7 @@ int movimenta_inimigo(ponto *inimigo, fase *fasea, int *status, int *poder, save
     { // se o caracter na posicao for um E, ou seja, o lolo nao matou ele
         if (inimigo->vivo)
         {
-            direcao = (rand() % 4); // faz a movimentacao aleatoria
+            direcao = (rand() % 4); // faz a movimenta��o aleatoria
             switch (direcao)
             {
             case 0:
@@ -750,10 +735,10 @@ int movimenta_inimigo(ponto *inimigo, fase *fasea, int *status, int *poder, save
                 cprintf("E");
                 statusmove = 1;
             }
-            // ou para onde o Lolo esta
+            // ou para onde o Lolo est�
             else if (caracter == 'L')
             {
-                // se o Lolo nao tem coracao, mata ele
+                // se o Lolo n�o tem cora��o, mata ele
                 if (*poder == 0)
                 {
                     gotoxy(oldpos_inimigo.x + 1, oldpos_inimigo.y + 1);
@@ -763,7 +748,7 @@ int movimenta_inimigo(ponto *inimigo, fase *fasea, int *status, int *poder, save
                     *status = 1;
                     statusmove = 1;
                 }
-                // se nao morre
+                // se n�o morre
                 else
                 {
                     (*poder)--;
@@ -772,9 +757,6 @@ int movimenta_inimigo(ponto *inimigo, fase *fasea, int *status, int *poder, save
                     fasea->elementos[oldpos_inimigo.y][oldpos_inimigo.x] = ' ';
                     gotoxy(oldpos_inimigo.x + 1, oldpos_inimigo.y + 1);
                     cprintf(" ");
-                    jogador->totalpts++;
-                    if (jogador->totalpts % 10 == 0)
-                        jogador->vidas++;
                     statusmove = 1;
                 }
             }
@@ -801,21 +783,20 @@ void morreu(save *jogador)
     clrscr(); // limpa a tela para imprimir a outra fase
 }
 
-void passou_de_fase(save *jogador, int *vencedor)
+void passou_de_fase(save *jogador)
 {
-    if (jogador->ultimafase == 4)
-    { // caso seja a ultima fase e o jogador passar dela, ele venceu o jogo
+    if (jogador->ultimafase == 3)
+    {
         clrscr();
         printf("=======================================================================================================\n");
         printf("                                         VOCE VENCEU\n");
         printf("=======================================================================================================\n");
-        printf("Parabens voce resgatou a princesa!!\n");
+        printf("Parab�ns voc� resgatou a princesa!!");
         system("pause");
         clrscr();
-        *vencedor = 1;
     }
     else
-    { // senao, limpa a tela e salva os dados para preparar a proxima fase
+    {
         Sleep(500);
         clrscr();
         printf("Voce passou de fase!\n");
